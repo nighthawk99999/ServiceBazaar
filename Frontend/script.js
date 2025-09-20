@@ -46,6 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function initPage() {
         updateAuthUI(); // Call on every page load
 
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mainNav = document.querySelector('.main-nav');
+
+        if (mobileMenuToggle && mainNav) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mainNav.classList.toggle('active');
+            });
+        }
+
         const searchInput = document.getElementById("searchInput");
         if (searchInput) {
             initHomePage(searchInput);
@@ -162,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const emailOrUsername = formElement.querySelector('#username').value;
                 const password = formElement.querySelector('#password').value;
                 // Try email first
-                let res = await fetch('http://localhost:5000/api/login', {
+                let res = await fetch('https://servicebazaarbackend-1.onrender.com/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: emailOrUsername, password })
@@ -176,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 } else {
                     // Try username as name
-                    res = await fetch('http://localhost:5000/api/login', {
+                    res = await fetch('https://servicebazaarbackend-1.onrender.com/api/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: emailOrUsername, password })
@@ -195,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const name = formElement.querySelector('#regUsername').value;
                 const email = formElement.querySelector('#regEmail').value;
                 const password = formElement.querySelector('#regPassword').value;
-                const res = await fetch('http://localhost:5000/api/register', {
+                const res = await fetch('https://servicebazaarbackend-1.onrender.com/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
@@ -300,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Professional Login
                 const email = formElement.querySelector('#email').value;
                 const password = formElement.querySelector('#password').value;
-                let res = await fetch('http://localhost:5000/api/professional/login', {
+                let res = await fetch('https://servicebazaarbackend-1.onrender.com/api/professional/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -313,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 } else {
                     // Try name as login
-                    res = await fetch('http://localhost:5000/api/professional/login', {
+                    res = await fetch('https://servicebazaarbackend-1.onrender.com/api/professional/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: email, password })
@@ -335,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const location = formElement.querySelector('#regLocation').value;
                 const selectedServices = Array.from(formElement.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
 
-                const res = await fetch('http://localhost:5000/api/professional/register', {
+                const res = await fetch('https://servicebazaarbackend-1.onrender.com/api/professional/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, location, categories: selectedServices })
