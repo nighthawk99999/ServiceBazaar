@@ -58,7 +58,7 @@ h1, h2, h3, h4 {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     position: sticky; top: 0; z-index: 1000;
 }
-.navbar .logo { font-family: var(--heading-font); font-size: 1.6rem; font-weight: 700; color: var(--primary-color); }
+.navbar .logo { font-family: var(--heading-font); font-size: 1.6rem; font-weight: 700; color: var(--primary-color); text-decoration: none; }
 .navbar nav a { color: var(--text-color); margin-left: 1.5rem; text-decoration: none; font-weight: 700; position: relative; padding-bottom: 5px; }
 .navbar nav a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 3px; background-color: var(--accent-color); transition: width 0.3s ease; }
 .navbar nav a:hover::after { width: 100%; }
@@ -67,6 +67,39 @@ h1, h2, h3, h4 {
 #accountName { color: var(--text-color); margin-left: 1.5rem; font-weight: 700; position: relative; padding-bottom: 5px; transition: color 0.3s; }
 #accountName::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 3px; background-color: var(--accent-color); transition: width 0.3s ease; }
 #accountName:hover::after { width: 100%; }
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none; /* Hidden by default on desktop */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+/* === Responsive Navbar for Mobile === */
+@media (max-width: 768px) {
+    .main-nav {
+        display: none; /* Hide nav links by default */
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .main-nav.active {
+        display: flex; /* Show when active */
+    }
+    .main-nav a { margin: 0.5rem 0; }
+    .mobile-menu-toggle {
+        display: block; /* Show the hamburger icon */
+    }
+}
 
 /* === Hero Section (index.html) === */
 .hero {

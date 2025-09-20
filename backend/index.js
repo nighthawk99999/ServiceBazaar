@@ -59,8 +59,13 @@ app.post('/api/register', async (req, res) => {
 // User login (by email)
 app.post('/api/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { email, name, password } = req.body;
+    if (!email && !name) {
+      return res.status(400).json({ error: 'Email or name is required' });
+    }
+
+    const query = email ? { email } : { name };
+    const user = await User.findOne(query);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -102,8 +107,13 @@ app.post('/api/professional/register', async (req, res) => {
 // Professional login (by email)
 app.post('/api/professional/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { email, name, password } = req.body;
+    if (!email && !name) {
+      return res.status(400).json({ error: 'Email or name is required' });
+    }
+
+    const query = email ? { email } : { name };
+    const user = await User.findOne(query);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -124,11 +134,18 @@ app.post('/api/professional/login', async (req, res) => {
 // Create a new booking
 app.post('/api/bookings', auth, async (req, res) => {
   try {
-    const { service_id, schedule } = req.body; // Updated fields
+    const { service_id, schedule } = req.body;
+
+    // Find the service to get the professional's ID
+    const service = await Service.findById(service_id);
+    if (!service) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
 
     const newBooking = new Booking({
       user_id: req.user.id, // Set user ID from authenticated user
       service_id,
+      professional_id: service.professional_id, // Add the professional's ID
       schedule,
     });
 
@@ -140,10 +157,26 @@ app.post('/api/bookings', auth, async (req, res) => {
   }
 });
 
-// Get all bookings for the authenticated user
+// Get all bookings for the authenticated user (customer or professional)
 app.get('/api/bookings', auth, async (req, res) => {
   try {
-    const bookings = await Booking.find({ user_id: req.user.id }).sort({ createdAt: -1 });
+    // Check if the authenticated user is a professional
+    const isProfessional = await Professional.findById(req.user.id);
+
+    let query;
+    if (isProfessional) {
+      // If professional, find bookings where they are the provider
+      query = { professional_id: req.user.id };
+    } else {
+      // If customer, find bookings they created
+      query = { user_id: req.user.id };
+    }
+
+    const bookings = await Booking.find(query)
+      .populate('service_id', 'service_name description') // Add service details
+      .populate('user_id', 'name email') // Add customer details
+      .populate('professional_id', 'name') // Add professional's name
+      .sort({ schedule: -1 }); // Sort by upcoming schedule
     res.json(bookings);
   } catch (err) {
     console.error(err);

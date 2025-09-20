@@ -11,6 +11,11 @@ const BookingSchema = new mongoose.Schema({
     ref: 'Service',
     required: true,
   },
+  professional_id: { // FK to Professional (User)
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   schedule: {
     type: Date,
     required: true,

@@ -1,158 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My Bookings - ServiceBazaar</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - ServiceBazaar</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <header class="navbar">
-    <div class="logo">ServiceBazaar</div>
-    <nav style="position: relative;">
-        <a href="index.html">Home</a>
-        <a href="services.html">Services</a>
-        <a href="login.html" id="loginLink">Login</a>
-        <a href="about.html">About</a>
-        <span id="accountName" style="margin-left: 1em; font-weight: bold; cursor: pointer; position: relative;"></span>
-        <div id="logoutDropdown" style="display:none; position: absolute; right: 0; top: 2.5em; z-index: 100;">
-            <button id="logoutBtn" class="btn btn-primary" style="width: 120px;">Logout</button>
-        </div>
-    </nav>
-  </header>
 
-  <main>
-    <section class="page-header">
-      <h1>My Bookings</h1>
-      <p>View your upcoming and past service appointments.</p>
-    </section>
-
-    <section class="container">
-      <div id="bookingsList" class="bookings-grid">
-        <!-- Bookings will be loaded here by JavaScript -->
-        <p id="noBookingsMessage" style="text-align: center; display: none;">You have no bookings yet. <a href="booking.html">Book a service now!</a></p>
-      </div>
-    </section>
-  </main>
-  
-  <footer>
-    <div class="footer-grid">
-        <div class="footer-section">
-            <h3 class="logo">ServiceBazaar</h3>
-            <p>Your one-stop platform for finding trusted and skilled local service professionals in India.</p>
-            <div class="social-icons">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+    <header class="navbar">
+        <a href="index.html" class="logo">ServiceBazaar</a>
+        <nav class="main-nav" style="position: relative;">
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="login.html" id="loginLink">Login</a>
+            <a href="about.html">About</a>
+            <a href="mybookings.html" id="myBookingsLink" style="display: none;">My Bookings</a>
+            <span id="accountName" style="margin-left: 1em; font-weight: bold; cursor: pointer; position: relative;"></span>
+            <div id="logoutDropdown" style="display:none; position: absolute; right: 0; top: 2.5em; z-index: 100;">
+                <button id="logoutBtn" class="btn btn-primary" style="width: 120px;">Logout</button>
             </div>
-        </div>
-        <div class="footer-section">
-            <h4>Quick Links</h4>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="services.html">Services</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-            </ul>
-        </div>
-        <div class="footer-section">
-            <h4>For Customers</h4>
-            <ul>
-                <li><a href="#">How It Works</a></li>
-                <li><a href="#">Help & Support</a></li>
-                <li><a href="#">FAQ</a></li>
-                <li><a href="#">Safety</a></li>
-            </ul>
-        </div>
-        <div class="footer-section">
-            <h4>For Professionals</h4>
-            <ul>
-                <li><a href="login.html">Register with Us</a></li>
-                <li><a href="#">Partnership Guidelines</a></li>
-                <li><a href="#">Grow Your Business</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <p>&copy; 2025 ServiceBazaar India. All rights reserved.</p>
-    </div>
-  </footer>
+        </nav>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
 
-  <script>
-    // Show account name if logged in
-    const accountName = localStorage.getItem('customerName');
-    if (accountName) {
-        document.getElementById('accountName').textContent = accountName;
-        document.getElementById('loginLink').style.display = 'none';
-    }
-    const accountNameEl = document.getElementById('accountName');
-    const logoutDropdown = document.getElementById('logoutDropdown');
-    if (accountNameEl) {
-        accountNameEl.onclick = function(e) {
-            e.stopPropagation();
-            logoutDropdown.style.display = logoutDropdown.style.display === 'block' ? 'none' : 'block';
-        };
-        document.addEventListener('click', function() {
-            logoutDropdown.style.display = 'none';
-        });
-    }
-    document.getElementById('logoutBtn').onclick = function() {
-        localStorage.removeItem('customerName');
-        localStorage.removeItem('token');
-        window.location.href = 'index.html';
-    };
+    <main class="container">
+        <section class="bookings-section">
+            <div class="section-header">
+                <h2>My Bookings</h2>
+                <p>Here is a list of your scheduled and past services.</p>
+            </div>
+            <div id="bookingsContainer" class="bookings-grid">
+                <!-- Bookings will be dynamically inserted here by script.js -->
+                <p>Loading your bookings...</p>
+            </div>
+        </section>
+    </main>
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('token');
-        const bookingsList = document.getElementById('bookingsList');
-        const noBookingsMessage = document.getElementById('noBookingsMessage');
-
-        if (!token) {
-            alert('You must be logged in to view your bookings.');
-            window.location.href = 'login.html';
-            return;
-        }
-
-        try {
-            const res = await fetch('http://localhost:5000/api/bookings', {
-                method: 'GET',
-                headers: {
-                    'x-auth-token': token,
-                },
-            });
-
-            const bookings = await res.json();
-
-            if (res.ok && bookings.length > 0) {
-                bookings.forEach(booking => {
-                    const bookingCard = document.createElement('div');
-                    bookingCard.className = 'booking-card';
-                    bookingCard.innerHTML = `
-                        <h3>${booking.serviceType}</h3>
-                        <p><strong>Date:</strong> ${new Date(booking.bookingDate).toLocaleDateString()}</p>
-                        <p><strong>Time:</strong> ${booking.bookingTime}</p>
-                        <p><strong>Address:</strong> ${booking.address}</p>
-                        <p><strong>Description:</strong> ${booking.description}</p>
-                        <p><strong>Status:</strong> <span class="status-${booking.status}">${booking.status}</span></p>
-                        <p><strong>Booked On:</strong> ${new Date(booking.createdAt).toLocaleDateString()}</p>
-                    `;
-                    bookingsList.appendChild(bookingCard);
-                });
-            } else if (res.ok && bookings.length === 0) {
-                noBookingsMessage.style.display = 'block';
-            } else {
-                alert(bookings.error || 'Failed to fetch bookings.');
-                noBookingsMessage.style.display = 'block';
-            }
-        } catch (err) {
-            console.error('Error fetching bookings:', err);
-            alert('An error occurred while fetching your bookings.');
-            noBookingsMessage.style.display = 'block';
-        }
-    });
-  </script>
-
+    <script src="script.js"></script>
 </body>
 </html>

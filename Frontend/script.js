@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    const API_BASE_URL = 'http://localhost:5000'; // Use local backend for testing
+
     // --- GLOBAL FUNCTIONS ---
     function updateAuthUI() {
         const accountName = localStorage.getItem('customerName');
@@ -67,6 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (professionalForm) {
             initProfessionalLoginPage(professionalForm);
         }
+        const bookingsContainer = document.getElementById("bookingsContainer");
+        if (bookingsContainer) {
+            initMyBookingsPage(bookingsContainer);
+        }
+        const servicesContainer = document.getElementById("servicesContainer");
+        if (servicesContainer) {
+            initServicesPage(servicesContainer);
+        }
     }
 
     // --- HOMEPAGE SCRIPT ---
@@ -103,6 +113,111 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeSuggestions();
             }
         });
+    }
+
+    // --- SERVICES PAGE SCRIPT ---
+    async function initServicesPage(container) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/services`);
+            if (!res.ok) {
+                throw new Error('Failed to fetch services');
+            }
+            const services = await res.json();
+
+            if (services.length === 0) {
+                container.innerHTML = '<p>No services are available at the moment. Please check back later.</p>';
+                return;
+            }
+
+            container.innerHTML = ''; // Clear the "Loading..." message
+            services.forEach(service => {
+                const serviceCard = document.createElement('article');
+                serviceCard.className = 'service-card-new';
+
+                // A simple way to get an icon based on category
+                const getIconClass = (category) => {
+                    const cat = category.toLowerCase();
+                    if (cat.includes('plumb')) return 'fa-wrench';
+                    if (cat.includes('electr')) return 'fa-bolt';
+                    if (cat.includes('paint')) return 'fa-paint-roller';
+                    if (cat.includes('clean')) return 'fa-broom';
+                    return 'fa-toolbox'; // Default icon
+                };
+
+                serviceCard.innerHTML = `
+                    <div class="service-card-icon"><i class="fa-solid ${getIconClass(service.categories[0] || '')}"></i></div>
+                    <h3>${service.service_name}</h3>
+                    <div class="service-card-body">
+                        <p>${service.description}</p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem;"><strong>Provider:</strong> ${service.professional_id.name}</p>
+                    </div>
+                    <a href="booking.html?service_id=${service._id}" class="btn btn-primary">Book Now</a>
+                `;
+                container.appendChild(serviceCard);
+            });
+        } catch (error) {
+            console.error('Error fetching services:', error);
+            container.innerHTML = '<p>Could not load services. Please try again later.</p>';
+        }
+    }
+
+    // --- MY BOOKINGS PAGE SCRIPT ---
+    async function initMyBookingsPage(container) {
+        const token = localStorage.getItem('token');
+
+        // If user is not logged in, redirect to login page
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/bookings`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token // Send the authentication token
+                }
+            });
+
+            if (!res.ok) {
+                if (res.status === 401) { // Unauthorized/invalid token
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('customerName');
+                    window.location.href = 'login.html';
+                }
+                throw new Error('Failed to fetch bookings');
+            }
+
+            const bookings = await res.json();
+
+            if (bookings.length === 0) {
+                container.innerHTML = '<p>You have no bookings yet.</p>';
+                return;
+            }
+
+            // Clear the "Loading..." message and render bookings
+            container.innerHTML = '';
+            bookings.forEach(booking => {
+                const bookingCard = document.createElement('div');
+                bookingCard.className = 'booking-card';
+
+                const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+
+                bookingCard.innerHTML = `
+                    <h3>${booking.service_id.service_name}</h3>
+                    <p><strong>Status:</strong> <span class="status-${booking.status}">${booking.status}</span></p>
+                    <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
+                    <p><strong>Customer:</strong> ${booking.user_id.name}</p>
+                    <p><strong>Professional:</strong> ${booking.professional_id.name}</p>
+                `;
+                container.appendChild(bookingCard);
+            });
+
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+            container.innerHTML = '<p>Could not load your bookings. Please try again later.</p>';
+        }
     }
 
     // --- CUSTOMER LOGIN PAGE SCRIPT ---
@@ -171,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const emailOrUsername = formElement.querySelector('#username').value;
                 const password = formElement.querySelector('#password').value;
                 // Try email first
-                let res = await fetch('https://servicebazaarbackend-1.onrender.com/api/login', {
+                let res = await fetch(`${API_BASE_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: emailOrUsername, password })
@@ -185,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 } else {
                     // Try username as name
-                    res = await fetch('https://servicebazaarbackend-1.onrender.com/api/login', {
+                    res = await fetch(`${API_BASE_URL}/api/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: emailOrUsername, password })
@@ -197,14 +312,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = 'index.html';
                         return;
                     }
-                    alert(data.message || data.error);
+                    alert(data.error || 'Invalid credentials.'); // Use the latest error message
                 }
             } else {
                 // Customer Registration
                 const name = formElement.querySelector('#regUsername').value;
                 const email = formElement.querySelector('#regEmail').value;
                 const password = formElement.querySelector('#regPassword').value;
-                const res = await fetch('https://servicebazaarbackend-1.onrender.com/api/register', {
+                const res = await fetch(`${API_BASE_URL}/api/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
@@ -235,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title.innerText = `Partner Login`;
                 formFields.innerHTML = `
                     <div class="input-group">
-                        <input type="email" id="email" placeholder="Email Address" required>
+                        <input type="text" id="username" placeholder="Username or Email" required>
                         <span class="icon"><i class="fa-solid fa-envelope"></i></span>
                     </div>
                     <div class="input-group">
@@ -307,30 +422,30 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (authMode === 'login') {
                 // Professional Login
-                const email = formElement.querySelector('#email').value;
+                const emailOrUsername = formElement.querySelector('#username').value;
                 const password = formElement.querySelector('#password').value;
-                let res = await fetch('https://servicebazaarbackend-1.onrender.com/api/professional/login', {
+                let res = await fetch(`${API_BASE_URL}/api/professional/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email: emailOrUsername, password })
                 });
                 let data = await res.json();
                 if (res.ok) {
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('customerName', data.name || email);
+                    localStorage.setItem('customerName', data.name || emailOrUsername);
                     window.location.href = 'index.html';
                     return;
                 } else {
                     // Try name as login
-                    res = await fetch('https://servicebazaarbackend-1.onrender.com/api/professional/login', {
+                    res = await fetch(`${API_BASE_URL}/api/professional/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: email, password })
+                        body: JSON.stringify({ name: emailOrUsername, password })
                     });
                     data = await res.json();
                     if (res.ok) {
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('customerName', data.name || email);
+                        localStorage.setItem('token', data.token); // Save token
+                        localStorage.setItem('customerName', data.name || emailOrUsername); // Save name
                         window.location.href = 'index.html';
                         return;
                     }
@@ -344,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const location = formElement.querySelector('#regLocation').value;
                 const selectedServices = Array.from(formElement.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
 
-                const res = await fetch('https://servicebazaarbackend-1.onrender.com/api/professional/register', {
+                const res = await fetch(`${API_BASE_URL}/api/professional/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, location, categories: selectedServices })
