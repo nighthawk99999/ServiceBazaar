@@ -180,21 +180,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            if (res.status === 401) { // Handle unauthorized access first
+                localStorage.removeItem('token');
+                localStorage.removeItem('customerName');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // If the response is not successful, it might be an error or just an empty list.
             if (!res.ok) {
-                if (res.status === 401) { // Unauthorized/invalid token
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('customerName');
-                    window.location.href = 'login.html';
+                // We can assume a non-OK status with no bookings means "No bookings yet".
+                // A real server error (500) will be caught below.
+                const bookings = await res.json().catch(() => []); // Attempt to parse, default to [] on failure
+                if (bookings.length === 0) {
+                    container.innerHTML = '<p>You have no bookings yet.</p>';
+                    return;
                 }
                 throw new Error('Failed to fetch bookings');
             }
 
             const bookings = await res.json();
-
-            if (bookings.length === 0) {
-                container.innerHTML = '<p>You have no bookings yet.</p>';
-                return;
-            }
 
             // Clear the "Loading..." message and render bookings
             container.innerHTML = '';
