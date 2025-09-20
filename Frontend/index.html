@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ServiceBazaar - Find Trusted Local Professionals in India</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">ServiceBazaar</div>
+        <nav style="position: relative;">
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="login.html" id="loginLink">Login</a>
+            <a href="about.html">About</a>
+            <a href="mybookings.html" id="myBookingsLink" style="display: none;">My Bookings</a>
+            <span id="accountName" style="margin-left: 1em; font-weight: bold; cursor: pointer; position: relative;"></span>
+            <div id="logoutDropdown" style="display:none; position: absolute; right: 0; top: 2.5em; z-index: 100;">
+                <button id="logoutBtn" class="btn btn-primary" style="width: 120px;">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Your Search for Quality Service Ends Here</h1>
+            <p>Connect instantly with skilled, vetted, and trusted local professionals for any job, big or small.</p>
+            <div class="search-box">
+                <input type="text" placeholder="e.g., 'Plumber'" />
+                <button><i class="fa-solid fa-search"></i> Find</button>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="section-header">
+                <h2>Why Choose ServiceBazaar?</h2>
+                <p>We provide an experience you can trust.</p>
+            </div>
+            <div class="why-us-grid">
+                <div class="why-us-card">
+                    <div class="icon"><i class="fa-solid fa-user-check"></i></div>
+                    <h3>Vetted Experts</h3>
+                    <p>Every professional is background-checked and verified for quality.</p>
+                </div>
+                <div class="why-us-card">
+                    <div class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    <h3>Upfront Pricing</h3>
+                    <p>No hidden fees. Get transparent quotes before you book.</p>
+                </div>
+                <div class="why-us-card">
+                    <div class="icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <h3>Easy Scheduling</h3>
+                    <p>Book a time that works for you, right from our platform.</p>
+                </div>
+                <div class="why-us-card">
+                    <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>Satisfaction Guarantee</h3>
+                    <p>We're committed to your happiness. We'll make it right if you're not satisfied.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="container" style="background: var(--light-bg);">
+            <div class="section-header">
+                <h2>Meet Our Top Professionals</h2>
+                <p>Highly rated experts from your community, ready to help.</p>
+            </div>
+            <div class="professionals-grid">
+                <article class="professional-card">
+                    <img src="https://images.unsplash.com/photo-1618472608705-50f750b38159?auto=format&fit=crop&w=300&q=80" alt="Female Electrician Priya Sharma">
+                    <h3>Priya Sharma</h3>
+                    <p class="specialty">Master Electrician</p>
+                    <div class="rating">
+                        <i class="fa-solid fa-star"></i> 4.9 (150+ jobs)
+                    </div>
+                </article>
+                <article class="professional-card">
+                    <img src="https://images.unsplash.com/photo-1593994392474-6a56c10839b1?auto=format&fit=crop&w=300&q=80" alt="Male Plumber Arjun Singh">
+                    <h3>Arjun Singh</h3>
+                    <p class="specialty">Expert Plumber</p>
+                    <div class="rating">
+                        <i class="fa-solid fa-star"></i> 4.8 (200+ jobs)
+                    </div>
+                </article>
+                <article class="professional-card">
+                    <img src="https://images.unsplash.com/photo-1555696958-c5049b1ce346?auto=format&fit=crop&w=300&q=80" alt="Male Carpenter Rohan Mehta">
+                    <h3>Rohan Mehta</h3>
+                    <p class="specialty">Lead Carpenter</p>
+                    <div class="rating">
+                        <i class="fa-solid fa-star"></i> 5.0 (120+ jobs)
+                    </div>
+                </article>
+            </div>
+        </section>
+        
+        <section class="testimonials container">
+            <div class="section-header">
+                <h2>What Our Customers Say</h2>
+            </div>
+            <div class="testimonial-card">
+                <p>"Booking a plumber was incredibly fast and easy. The professional was on time, courteous, and did a fantastic job. Highly recommend ServiceBazaar!"</p>
+                <div class="testimonial-author">
+                    <img src="https://images.unsplash.com/photo-1622554198155-08163f773c3b?auto=format&fit=crop&w=150&q=80" alt="Customer Ramesh K.">
+                    <div>
+                        <h4>Ramesh K.</h4>
+                        <div class="rating">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section container">
+            <h2>Ready to Get Started?</h2>
+            <p>Find the right professional for your job today, or join our network of skilled experts.</p>
+            <div class="cta-buttons">
+                <a href="services.html" class="btn btn-accent">Find a Service</a>
+                <a href="login.html" class="btn btn-primary" style="background: white; color: var(--primary-color);">Become a Professional</a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h3 class="logo">ServiceBazaar</h3>
+                <p>Your one-stop platform for finding trusted and skilled local service professionals in India.</p>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>For Customers</h4>
+                <ul>
+                    <li><a href="#">How It Works</a></li>
+                    <li><a href="#">Help & Support</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Safety</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>For Professionals</h4>
+                <ul>
+                    <li><a href="login_professional.html">Register with Us</a></li>
+                    <li><a href="#">Partnership Guidelines</a></li>
+                    <li><a href="#">Grow Your Business</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ServiceBazaar India. All rights reserved.</p>
+        </div>
+    </footer>
+
+    
+
+    <script src="script.js"></script>
+</body>
+</html>

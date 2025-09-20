@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Book a Service - ServiceBazaar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">ServiceBazaar</div>
+    <nav style="position: relative;">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="about.html">About</a>
+        <a href="mybookings.html" id="myBookingsLink" style="display: none;">My Bookings</a>
+        <span id="accountName" style="margin-left: 1em; font-weight: bold; cursor: pointer; position: relative;"></span>
+        <div id="logoutDropdown" style="display:none; position: absolute; right: 0; top: 2.5em; z-index: 100;">
+            <button id="logoutBtn" class="btn btn-primary" style="width: 120px;">Logout</button>
+        </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-header">
+      <h1>Book a Service</h1>
+      <p>Let's get the details to connect you with the right professional.</p>
+    </section>
+
+    <section class="container">
+      <div class="login-card" style="max-width: 700px; margin: auto;">
+        <form id="bookingForm">
+            <div class="form-group">
+                <label for="serviceType">Service Type</label>
+                <select id="serviceType" name="serviceType" class="input-group" required>
+                    <option value="" disabled selected>Select a service...</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Masonry">Masonry</option>
+                    <option value="Painting">Painting</option>
+                    <option value="Cleaning">Cleaning</option>
+                    <option value="Gardening">Gardening</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="bookingDate">Preferred Date</label>
+                <input type="date" id="bookingDate" name="bookingDate" class="input-group" required>
+            </div>
+            <div class="form-group">
+                <label for="bookingTime">Preferred Time</label>
+                <input type="time" id="bookingTime" name="bookingTime" class="input-group" required>
+            </div>
+            <div class="form-group">
+                <label for="address">Service Address</label>
+                <textarea id="address" name="address" rows="3" placeholder="Enter your full address" class="input-group" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="description">Job Description</label>
+                <textarea id="description" name="description" rows="4" placeholder="Describe the work you need done..." class="input-group" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Confirm Booking</button>
+        </form>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="footer-grid">
+        <div class="footer-section">
+            <h3 class="logo">ServiceBazaar</h3>
+            <p>Your one-stop platform for finding trusted and skilled local service professionals in India.</p>
+            <div class="social-icons">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>For Customers</h4>
+            <ul>
+                <li><a href="#">How It Works</a></li>
+                <li><a href="#">Help & Support</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Safety</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>For Professionals</h4>
+            <ul>
+                <li><a href="login.html">Register with Us</a></li>
+                <li><a href="#">Partnership Guidelines</a></li>
+                <li><a href="#">Grow Your Business</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 ServiceBazaar India. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+// Show account name and My Bookings link if logged in
+const accountName = localStorage.getItem('customerName');
+if (accountName) {
+    document.getElementById('accountName').textContent = accountName;
+    document.getElementById('loginLink').style.display = 'none';
+    document.getElementById('myBookingsLink').style.display = 'inline'; // Show My Bookings link
+}
+const accountNameEl = document.getElementById('accountName');
+const logoutDropdown = document.getElementById('logoutDropdown');
+if (accountNameEl) {
+    accountNameEl.onclick = function(e) {
+        e.stopPropagation();
+        logoutDropdown.style.display = logoutDropdown.style.display === 'block' ? 'none' : 'block';
+    };
+    document.addEventListener('click', function() {
+        logoutDropdown.style.display = 'none';
+    });
+}
+document.getElementById('logoutBtn').onclick = function() {
+    localStorage.removeItem('customerName');
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+};
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('You must be logged in to book a service.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const serviceType = document.getElementById('serviceType').value;
+            const bookingDate = document.getElementById('bookingDate').value;
+            const bookingTime = document.getElementById('bookingTime').value;
+            const address = document.getElementById('address').value;
+            const description = document.getElementById('description').value;
+
+            try {
+                const res = await fetch('http://localhost:5000/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-auth-token': token, // Send the token
+                    },
+                    body: JSON.stringify({ serviceType, bookingDate, bookingTime, address, description }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Booking confirmed! We will contact you shortly.');
+                    bookingForm.reset(); // Clear the form
+                    // Optionally redirect to a "my bookings" page
+                } else {
+                    alert(data.error || data.msg || 'Failed to confirm booking.');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('An error occurred while booking the service.');
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

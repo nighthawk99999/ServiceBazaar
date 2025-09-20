@@ -1,0 +1,228 @@
+cd "c:\Users\IRFAN\Desktop\Akhyaar\servicebazaar\backend"<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us - ServiceBazaar</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="navbar">
+    <div class="logo">ServiceBazaar</div>
+    <nav style="position: relative;">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="about.html">About</a>
+        <a href="mybookings.html" id="myBookingsLink" style="display: none;">My Bookings</a>
+        <span id="accountName" style="margin-left: 1em; font-weight: bold; cursor: pointer; position: relative;"></span>
+        <div id="logoutDropdown" style="display:none; position: absolute; right: 0; top: 2.5em; z-index: 100;">
+            <button id="logoutBtn" class="btn btn-primary" style="width: 120px;">Logout</button>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="page-header">
+        <h1>About ServiceBazaar</h1>
+        <p>Connecting communities, one service at a time.</p>
+    </section>
+
+    <section class="container">
+        <div class="about-story-grid">
+            <div class="about-text">
+                <h2 style="font-size: 2.2rem;">Our Mission & Story</h2>
+                <p>ServiceBazaar was founded on a simple idea: finding a reliable local professional shouldn't be a gamble. We were tired of the endless searching, the uncertain quality, and the lack of transparency in the Indian service market. </p>
+                <p>Our mission is to empower both customers and skilled professionals by creating a seamless, trustworthy platform. By focusing on community, quality, and convenience, we're making it easier than ever to get jobs done right, fostering local economies and building lasting connections.</p>
+            </div>
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80" alt="A team collaborating on a project">
+            </div>
+        </div>
+    </section>
+    
+    <section class="container" style="background: var(--light-bg);">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>A simple, transparent process to get your tasks done.</p>
+        </div>
+        <div class="why-us-grid how-it-works-grid">
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-search"></i></div>
+                <h3>1. Find Your Service</h3>
+                <p>Browse our wide range of categories or use the search bar to find the specific professional you need for your job.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                <h3>2. Compare & Select</h3>
+                <p>View profiles of vetted professionals. Compare their ratings, reviews, and pricing to choose the perfect expert for your needs.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-calendar-check"></i></div>
+                <h3>3. Book with Ease</h3>
+                <p>Select a date and time that works for you. Confirm your booking instantly and receive all the details directly in your account.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-star"></i></div>
+                <h3>4. Rate & Relax</h3>
+                <p>Once the job is done, you can leave a review to help our community. Enjoy peace of mind with our satisfaction guarantee.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="container">
+        <div class="section-header">
+            <h2>The ServiceBazaar Advantage</h2>
+            <p>What sets us apart from the rest.</p>
+        </div>
+        <div class="why-us-grid">
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>Unmatched Trust & Safety</h3>
+                <p>Every professional on our platform undergoes a rigorous background check and skill verification process. Your safety is our priority.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <h3>Transparent, Upfront Pricing</h3>
+                <p>No hidden costs or last-minute surprises. Get clear, competitive quotes before you commit to a service.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-headset"></i></div>
+                <h3>Dedicated Customer Support</h3>
+                <p>Our India-based support team is here to assist you at every step, from booking to job completion, ensuring a smooth experience.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="container" style="background: var(--light-bg);">
+        <div class="section-header">
+            <h2>Our Core Values</h2>
+            <p>The principles that guide everything we do.</p>
+        </div>
+        <div class="core-values-grid">
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-handshake-angle"></i></div>
+                <h3>Build Trust</h3>
+                <p>We prioritize transparency and reliability to ensure peace of mind.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-users"></i></div>
+                <h3>Empower People</h3>
+                <p>We provide tools for local professionals and customers to succeed.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-heart"></i></div>
+                <h3>Commit to Quality</h3>
+                <p>We are relentless in our pursuit of a high-quality experience for all users.</p>
+            </div>
+            <div class="why-us-card">
+                <div class="icon"><i class="fa-solid fa-lightbulb"></i></div>
+                <h3>Innovate Constantly</h3>
+                <p>We are always looking for better ways to serve our community.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="container">
+        <div class="section-header">
+            <h2>Meet the Leadership</h2>
+            <p>The team dedicated to building a better service experience in India.</p>
+        </div>
+        <div class="professionals-grid">
+            <article class="professional-card">
+                <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=300&q=80" alt="CEO Vikram Patel">
+                <h3>Vikram Patel</h3>
+                <p class="specialty">Founder & CEO</p>
+                <p style="font-size: 0.9rem;">Passionate about connecting Indian communities through technology.</p>
+            </article>
+            <article class="professional-card">
+                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80" alt="CTO Ananya Reddy">
+                <h3>Ananya Reddy</h3>
+                <p class="specialty">Chief Technology Officer</p>
+                <p style="font-size: 0.9rem;">The architect of our secure and reliable platform.</p>
+            </article>
+            <article class="professional-card">
+                <img src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?auto=format&fit=crop&w=300&q=80" alt="COO Sameer Khan">
+                <h3>Sameer Khan</h3>
+                <p class="specialty">Head of Operations</p>
+                <p style="font-size: 0.9rem;">Ensuring a seamless experience for every user in India.</p>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer>
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h3 class="logo">ServiceBazaar</h3>
+                <p>Your one-stop platform for finding trusted and skilled local service professionals in India.</p>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>For Customers</h4>
+                <ul>
+                    <li><a href="#">How It Works</a></li>
+                    <li><a href="#">Help & Support</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Safety</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>For Professionals</h4>
+                <ul>
+                    <li><a href="login.html">Register with Us</a></li>
+                    <li><a href="#">Partnership Guidelines</a></li>
+                    <li><a href="#">Grow Your Business</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ServiceBazaar India. All rights reserved.</p>
+        </div>
+
+</footer>
+
+<script>
+// Show account name and My Bookings link if logged in
+const accountName = localStorage.getItem('customerName');
+if (accountName) {
+    document.getElementById('accountName').textContent = accountName;
+    document.getElementById('loginLink').style.display = 'none';
+    document.getElementById('myBookingsLink').style.display = 'inline'; // Show My Bookings link
+}
+const accountNameEl = document.getElementById('accountName');
+const logoutDropdown = document.getElementById('logoutDropdown');
+if (accountNameEl) {
+    accountNameEl.onclick = function(e) {
+        e.stopPropagation();
+        logoutDropdown.style.display = logoutDropdown.style.display === 'block' ? 'none' : 'block';
+    };
+    document.addEventListener('click', function() {
+        logoutDropdown.style.display = 'none';
+    });
+}
+document.getElementById('logoutBtn').onclick = function() {
+    localStorage.removeItem('customerName');
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+};
+</script>
+
+</body>
+</html>

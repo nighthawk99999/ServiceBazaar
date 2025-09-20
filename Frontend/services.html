@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Our Services - ServiceBazaar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">ServiceBazaar</div>
+    <nav style="position: relative;">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="about.html">About</a>
+        <a href="mybookings.html" id="myBookingsLink" style="display: none;">My Bookings</a>
+        <span id="accountName" style="margin-left: 1em; font-weight: bold; cursor: pointer; position: relative;"></span>
+        <div id="logoutDropdown" style="display:none; position: absolute; right: 0; top: 2.5em; z-index: 100;">
+            <button id="logoutBtn" class="btn btn-primary" style="width: 120px;">Logout</button>
+        </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-header">
+      <h1>Our Services</h1>
+      <p>From small repairs to major projects, our platform connects you with trusted professionals.</p>
+    </section>
+
+    <section class="container">
+      <div class="services-grid-new">
+
+        <article class="service-card-new">
+            <div class="service-card-icon"><i class="fa-solid fa-wrench"></i></div>
+            <h3>Plumbing</h3>
+            <div class="service-card-body">
+                <p>Leaky taps, pipe installations, and all your plumbing needs handled with precision and care.</p>
+            </div>
+            <a href="booking.html" class="btn btn-primary">Book Now</a>
+        </article>
+
+        <article class="service-card-new">
+            <div class="service-card-icon"><i class="fa-solid fa-bolt"></i></div>
+            <h3>Electrical</h3>
+            <div class="service-card-body">
+                <p>Safe wiring, lighting, and appliance installations by professional electricians.</p>
+            </div>
+            <a href="booking.html" class="btn btn-primary">Book Now</a>
+        </article>
+
+        <article class="service-card-new">
+            <div class="service-card-icon"><i class="fa-solid fa-hammer"></i></div>
+            <h3>Masonry</h3>
+            <div class="service-card-body">
+                <p>Expert masons for brickwork, wall repairs, and building durable stone structures.</p>
+            </div>
+            <a href="booking.html" class="btn btn-primary">Book Now</a>
+        </article>
+
+        <article class="service-card-new">
+            <div class="service-card-icon"><i class="fa-solid fa-paint-roller"></i></div>
+            <h3>Painting</h3>
+            <div class="service-card-body">
+                <p>Interior and exterior painting services that brighten and protect your spaces.</p>
+            </div>
+            <a href="booking.html" class="btn btn-primary">Book Now</a>
+        </article>
+        
+        <article class="service-card-new">
+            <div class="service-card-icon"><i class="fa-solid fa-broom"></i></div>
+            <h3>Cleaning</h3>
+            <div class="service-card-body">
+                <p>Comprehensive cleaning for homes and offices, including deep cleaning.</p>
+            </div>
+            <a href="booking.html" class="btn btn-primary">Book Now</a>
+        </article>
+        
+        <article class="service-card-new">
+            <div class="service-card-icon"><i class="fa-solid fa-tree"></i></div>
+            <h3>Gardening</h3>
+            <div class="service-card-body">
+                <p>Garden maintenance, landscaping design, and tree care to beautify your spaces.</p>
+            </div>
+            <a href="booking.html" class="btn btn-primary">Book Now</a>
+        </article>
+
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="footer-grid">
+        <div class="footer-section">
+            <h3 class="logo">ServiceBazaar</h3>
+            <p>Your one-stop platform for finding trusted and skilled local service professionals in India.</p>
+            <div class="social-icons">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>For Customers</h4>
+            <ul>
+                <li><a href="#">How It Works</a></li>
+                <li><a href="#">Help & Support</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Safety</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>For Professionals</h4>
+            <ul>
+                <li><a href="#">Register with Us</a></li>
+                <li><a href="#">Partnership Guidelines</a></li>
+                <li><a href="#">Grow Your Business</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 ServiceBazaar India. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+// Show account name and My Bookings link if logged in
+const accountName = localStorage.getItem('customerName');
+if (accountName) {
+    document.getElementById('accountName').textContent = accountName;
+    document.getElementById('loginLink').style.display = 'none';
+    document.getElementById('myBookingsLink').style.display = 'inline'; // Show My Bookings link
+}
+const accountNameEl = document.getElementById('accountName');
+const logoutDropdown = document.getElementById('logoutDropdown');
+if (accountNameEl) {
+    accountNameEl.onclick = function(e) {
+        e.stopPropagation();
+        logoutDropdown.style.display = logoutDropdown.style.display === 'block' ? 'none' : 'block';
+    };
+    document.addEventListener('click', function() {
+        logoutDropdown.style.display = 'none';
+    });
+}
+document.getElementById('logoutBtn').onclick = function() {
+    localStorage.removeItem('customerName');
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+};
+</script>
+
+</body>
+</html>
