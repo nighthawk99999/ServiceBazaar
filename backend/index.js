@@ -134,19 +134,23 @@ app.post('/api/professional/login', async (req, res) => {
 // Create a new booking
 app.post('/api/bookings', auth, async (req, res) => {
   try {
-    const { service_id, schedule } = req.body;
+    const { serviceType, bookingDate, bookingTime, address, description } = req.body;
 
-    // Find the service to get the professional's ID
-    const service = await Service.findById(service_id);
+    // Find a service that matches the serviceType to get the professional's ID
+    // Note: This is a simple approach. A better way would be to send service_id from the frontend.
+    const service = await Service.findOne({ service_name: serviceType });
     if (!service) {
-      return res.status(404).json({ error: 'Service not found' });
+      return res.status(404).json({ error: `No professional offers the service: ${serviceType}` });
     }
 
     const newBooking = new Booking({
       user_id: req.user.id, // Set user ID from authenticated user
-      service_id,
+      service_id: service._id,
       professional_id: service.professional_id, // Add the professional's ID
-      schedule,
+      schedule: new Date(`${bookingDate}T${bookingTime}`), // Combine date and time
+      address, // Save the address
+      description, // Save the job description
+      status: 'pending' // Default status
     });
 
     const booking = await newBooking.save();

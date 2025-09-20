@@ -193,11 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 bookingCard.className = 'booking-card';
 
                 const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-
+                
                 bookingCard.innerHTML = `
                     <h3>${booking.service_id.service_name}</h3>
                     <p><strong>Status:</strong> <span class="status-${booking.status}">${booking.status}</span></p>
                     <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
+                    <p><strong>Address:</strong> ${booking.address}</p>
+                    <p><strong>Description:</strong> ${booking.description}</p>
                     <p><strong>Customer:</strong> ${booking.user_id.name}</p>
                     <p><strong>Professional:</strong> ${booking.professional_id.name}</p>
                 `;
