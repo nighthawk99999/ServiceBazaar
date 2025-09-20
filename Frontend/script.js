@@ -2,52 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_BASE_URL = 'http://localhost:5000'; // Use local backend for testing
 
-    // --- GLOBAL FUNCTIONS ---
-    function updateAuthUI() {
-        const accountName = localStorage.getItem('customerName');
-        const loginLink = document.getElementById('loginLink');
-        const myBookingsLink = document.getElementById('myBookingsLink');
-        const accountNameEl = document.getElementById('accountName');
-        const logoutDropdown = document.getElementById('logoutDropdown');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        if (accountName) {
-            if (accountNameEl) accountNameEl.textContent = accountName;
-            if (loginLink) loginLink.style.display = 'none';
-            if (myBookingsLink) myBookingsLink.style.display = 'inline';
-        } else {
-            if (loginLink) loginLink.style.display = 'inline';
-            if (myBookingsLink) myBookingsLink.style.display = 'none';
-            if (accountNameEl) accountNameEl.textContent = ''; // Clear if no user
-        }
-
-        if (accountNameEl) {
-            accountNameEl.onclick = function(e) {
-                e.stopPropagation();
-                if (logoutDropdown) {
-                    logoutDropdown.style.display = logoutDropdown.style.display === 'block' ? 'none' : 'block';
-                }
-            };
-            document.addEventListener('click', function() {
-                if (logoutDropdown) {
-                    logoutDropdown.style.display = 'none';
-                }
-            });
-        }
-
-        if (logoutBtn) {
-            logoutBtn.onclick = function() {
-                localStorage.removeItem('customerName');
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-            };
-        }
-    }
-
     // --- INITIALIZER ---
     function initPage() {
-        updateAuthUI(); // Call on every page load
-
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
         const mainNav = document.querySelector('.main-nav');
 
@@ -55,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileMenuToggle.addEventListener('click', () => {
                 mainNav.classList.toggle('active');
             });
+        }
+
+        const heroSearchForm = document.getElementById("heroSearchForm");
+        if (heroSearchForm) {
+            initHeroSearch(heroSearchForm);
         }
 
         const searchInput = document.getElementById("searchInput");
@@ -79,6 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- HERO SEARCH SCRIPT (HOMEPAGE) ---
+    function initHeroSearch(formElement) {
+        formElement.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchInput = formElement.querySelector('#searchInput');
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                window.location.href = `services.html?search=${encodeURIComponent(searchTerm)}`;
+            }
+        });
+    }
     // --- HOMEPAGE SCRIPT ---
     function initHomePage(searchInput) {
         const services = [
@@ -118,14 +90,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SERVICES PAGE SCRIPT ---
     async function initServicesPage(container) {
         try {
+            // Check for a search query in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchTerm = urlParams.get('search');
+
             const res = await fetch(`${API_BASE_URL}/api/services`);
             if (!res.ok) {
                 throw new Error('Failed to fetch services');
             }
-            const services = await res.json();
+            let services = await res.json();
+
+            // If there's a search term, filter the services
+            if (searchTerm) {
+                const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                services = services.filter(service => 
+                    service.service_name.toLowerCase().includes(lowerCaseSearchTerm) ||
+                    service.description.toLowerCase().includes(lowerCaseSearchTerm)
+                );
+            }
 
             if (services.length === 0) {
-                container.innerHTML = '<p>No services are available at the moment. Please check back later.</p>';
+                container.innerHTML = searchTerm ? `<p>No services found matching "<strong>${searchTerm}</strong>". Try a different search.</p>` : '<p>No services are available at the moment. Please check back later.</p>';
                 return;
             }
 
@@ -151,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>${service.description}</p>
                         <p style="margin-top: 1rem; font-size: 0.9rem;"><strong>Provider:</strong> ${service.professional_id.name}</p>
                     </div>
-                    <a href="booking.html?service_id=${service._id}" class="btn btn-primary">Book Now</a>
+                    <a href="booking.html?service=${encodeURIComponent(service.service_name)}" class="btn btn-primary">Book Now</a>
                 `;
                 container.appendChild(serviceCard);
             });
