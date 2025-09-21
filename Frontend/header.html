@@ -1,15 +1,31 @@
 <a href="index.html" class="logo">ServiceBazaar</a>
-<nav class="main-nav" style="position: relative;">
-    <a href="services.html">Services</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-    <a href="login.html" id="loginLink">Login</a>
-    <a href="mybookings.html" id="myBookingsLink" style="display: none;">My Bookings</a>
-    <span id="accountName" style="margin-left: 1em; font-weight: bold; cursor: pointer; position: relative;"></span>
-    <div id="logoutDropdown" style="display:none; position: absolute; right: 0; top: 2.5em; z-index: 100;">
-        <button id="logoutBtn" class="btn btn-primary" style="width: 120px;">Logout</button>
+
+<div class="navbar-right">
+    <div class="nav-wrapper">
+        <nav class="main-nav">
+            <a href="services.html">Services</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+            <a href="login.html" id="loginLink">Login</a>
+            <a href="professional_dashboard.html" id="professionalDashboardLink" style="display: none;">Dashboard</a>
+            <a href="mybookings.html" id="myBookingsLink" style="display: none;">My Bookings</a>
+        </nav>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
+            <i class="fas fa-bars"></i>
+        </button>
     </div>
-</nav>
-<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
-    <i class="fas fa-bars"></i>
-</button>
+    
+    <!-- User Profile Dropdown -->
+    <div id="userProfile" class="user-profile-container" style="display: none;">
+        <div id="userProfileTrigger" class="user-profile-trigger">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+        </div>
+        <div id="userDropdown" class="user-dropdown-menu">
+            <div class="dropdown-user-info">
+                <span id="accountName">User Name</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+</div>

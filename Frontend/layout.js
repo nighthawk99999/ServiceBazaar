@@ -18,44 +18,57 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .catch(error => console.error(`Error loading component ${url}:`, error));
     };
+    function capitalizeName(name) {
+        if (!name) return '';
+        return name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    }
 
     // This function runs *after* the header is loaded into the page
     function setupHeaderUI() {
         const accountName = localStorage.getItem('customerName');
+        const isProfessional = localStorage.getItem('isProfessional') === 'true';
         const loginLink = document.getElementById('loginLink');
         const myBookingsLink = document.getElementById('myBookingsLink');
+        const professionalDashboardLink = document.getElementById('professionalDashboardLink');
+        const userProfile = document.getElementById('userProfile');
+        const userProfileTrigger = document.getElementById('userProfileTrigger');
+        const userDropdown = document.getElementById('userDropdown');
         const accountNameEl = document.getElementById('accountName');
-        const logoutDropdown = document.getElementById('logoutDropdown');
         const logoutBtn = document.getElementById('logoutBtn');
 
         if (accountName) {
-            if (accountNameEl) accountNameEl.textContent = accountName;
+            if (accountNameEl) accountNameEl.textContent = capitalizeName(accountName);
             if (loginLink) loginLink.style.display = 'none';
-            if (myBookingsLink) myBookingsLink.style.display = 'inline';
+            if (userProfile) userProfile.style.display = 'flex';
+            if (isProfessional) {
+                if (professionalDashboardLink) professionalDashboardLink.style.display = 'inline';
+            } else {
+                if (myBookingsLink) myBookingsLink.style.display = 'inline';
+            }
         } else {
             if (loginLink) loginLink.style.display = 'inline';
+            if (userProfile) userProfile.style.display = 'none';
             if (myBookingsLink) myBookingsLink.style.display = 'none';
             if (accountNameEl) accountNameEl.textContent = '';
         }
 
-        if (accountNameEl) {
-            accountNameEl.onclick = function(e) {
+        if (userProfileTrigger) {
+            userProfileTrigger.onclick = function(e) {
                 e.stopPropagation();
-                if (logoutDropdown) {
-                    logoutDropdown.style.display = logoutDropdown.style.display === 'block' ? 'none' : 'block';
-                }
+                userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
             };
-            document.addEventListener('click', function() {
-                if (logoutDropdown) {
-                    logoutDropdown.style.display = 'none';
-                }
-            });
         }
+
+        // Close dropdown if clicking outside
+        document.addEventListener('click', function() {
+            if (userDropdown) userDropdown.style.display = 'none';
+        });
 
         if (logoutBtn) {
             logoutBtn.onclick = function() {
                 localStorage.removeItem('customerName');
                 localStorage.removeItem('token');
+                localStorage.removeItem('isProfessional');
                 window.location.href = 'index.html';
             };
         }

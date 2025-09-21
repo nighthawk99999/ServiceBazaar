@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage My Services - ServiceBazaar</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="navbar"><!-- Header will be loaded here --></header>
+
+    <main class="container">
+        <section class="page-header">
+            <h1>Manage Your Services</h1>
+            <p>Add, edit, or remove the services you offer to customers.</p>
+        </section>
+
+        <!-- Add New Service Form -->
+        <section class="container" style="padding-top: 0;">
+            <div class="login-card" style="max-width: 800px; margin: auto;">
+                <h3 style="text-align: center; margin-bottom: 1.5rem;">Add a New Service</h3>
+                <form id="addServiceForm">
+                    <div class="form-group">
+                        <label for="serviceName">Service Name</label>
+                        <input type="text" id="serviceName" placeholder="e.g., 'Leaky Faucet Repair'" class="input-group" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Service Description</label>
+                        <textarea id="description" rows="4" placeholder="Describe what this service includes..." class="input-group" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" class="input-group" required>
+                            <option value="" disabled selected>Select a category...</option>
+                        </select>
+                        <small>Select the most relevant category for this service.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Add Service</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- List of Existing Services -->
+        <section class="bookings-section">
+            <div class="section-header">
+                <h2>My Current Services</h2>
+            </div>
+            <div id="myServicesContainer" class="bookings-grid">
+                <p>Loading your services...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer><!-- Footer will be loaded here --></footer>
+
+    <script src="layout.js"></script>
+    <script src="config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login_professional.html';
+                return;
+            }
+
+            const servicesContainer = document.getElementById('myServicesContainer');
+            const addServiceForm = document.getElementById('addServiceForm');
+            const categoryDropdown = document.getElementById('category');
+
+            // Populate the category dropdown
+            if (categoryDropdown && typeof SERVICE_CATEGORIES !== 'undefined') {
+                SERVICE_CATEGORIES.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    categoryDropdown.appendChild(option);
+                });
+            }
+
+            // Fetch and display the professional's existing services
+            const fetchMyServices = async () => {
+                try {
+                    const res = await fetch(`${API_URL}/api/services/my`, {
+                        headers: { 'x-auth-token': token }
+                    });
+                    if (!res.ok) throw new Error('Failed to fetch services.');
+                    const services = await res.json();
+
+                    servicesContainer.innerHTML = '';
+                    if (services.length === 0) {
+                        servicesContainer.innerHTML = '<p>You have not added any services yet. Use the form above to get started.</p>';
+                        return;
+                    }
+
+                    services.forEach(service => {
+                        const card = document.createElement('div');
+                        card.className = 'booking-card';
+                        card.innerHTML = `
+                            <h3>${service.service_name}</h3>
+                            <p>${service.description}</p>
+                            <p><strong>Category:</strong> ${service.categories.join(', ')}</p>
+                            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary" style="flex: 1;">Edit</button>
+                                <button class="btn btn-accent" style="flex: 1; background: #dc3545;" onclick="deleteService('${service._id}')">Delete</button>
+                            </div>
+                        `;
+                        servicesContainer.appendChild(card);
+                    });
+                } catch (error) {
+                    servicesContainer.innerHTML = '<p>Could not load your services.</p>';
+                    console.error(error);
+                }
+            };
+
+            // Handle form submission for adding a new service
+            addServiceForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const service_name = document.getElementById('serviceName').value;
+                const description = document.getElementById('description').value;
+                const category = document.getElementById('category').value;
+
+                const res = await fetch(`${API_URL}/api/services`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                    body: JSON.stringify({ service_name, description, categories: [category] })
+                });
+
+                if (res.ok) {
+                    alert('Service added successfully!');
+                    addServiceForm.reset();
+                    fetchMyServices(); // Refresh the list
+                } else {
+                    const data = await res.json();
+                    alert(`Error: ${data.msg || 'Could not add service.'}`);
+                }
+            });
+
+            // Function to delete a service
+            window.deleteService = async (serviceId) => {
+                if (!confirm('Are you sure you want to delete this service?')) return;
+
+                const res = await fetch(`${API_URL}/api/services/${serviceId}`, {
+                    method: 'DELETE',
+                    headers: { 'x-auth-token': token }
+                });
+
+                if (res.ok) {
+                    alert('Service deleted.');
+                    fetchMyServices(); // Refresh the list
+                } else {
+                    alert('Failed to delete service.');
+                }
+            };
+
+            fetchMyServices();
+        });
+    </script>
+</body>
+</html>

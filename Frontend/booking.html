@@ -20,16 +20,9 @@
       <div class="login-card" style="max-width: 700px; margin: auto;">
         <form id="bookingForm">
             <div class="form-group">
-                <label for="serviceType">Service Type</label>
-                <select id="serviceType" name="serviceType" class="input-group" required>
-                    <option value="" disabled selected>Select a service...</option>
-                    <option value="Plumbing">Plumbing</option>
-                    <option value="Electrical">Electrical</option>
-                    <option value="Masonry">Masonry</option>
-                    <option value="Painting">Painting</option>
-                    <option value="Cleaning">Cleaning</option>
-                    <option value="Gardening">Gardening</option>
-                </select>
+                <label for="serviceName">Selected Service</label>
+                <!-- This field will be populated from the URL and made read-only -->
+                <input type="text" id="serviceName" name="serviceName" class="input-group" readonly required>
             </div>
             <div class="form-group">
                 <label for="bookingDate">Preferred Date</label>
@@ -59,13 +52,24 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const isProfessional = localStorage.getItem('isProfessional') === 'true';
+    if (isProfessional) {
+        document.body.innerHTML = '<h1>Access Denied</h1><p>Professionals cannot book services. Redirecting you to your dashboard...</p>';
+        setTimeout(() => {
+            window.location.href = 'professional_dashboard.html';
+        }, 2000);
+        return;
+    }
     // Pre-select service from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const serviceFromURL = urlParams.get('service');
-    const serviceDropdown = document.getElementById('serviceType');
+    const serviceId = urlParams.get('serviceId');
+    const serviceNameFromURL = urlParams.get('serviceName');
+    const serviceNameInput = document.getElementById('serviceName');
 
-    if (serviceFromURL && serviceDropdown) {
-        serviceDropdown.value = serviceFromURL;
+    if (serviceNameFromURL && serviceNameInput) {
+        // Populate the service name and make it look like a disabled input
+        serviceNameInput.value = decodeURIComponent(serviceNameFromURL);
+        serviceNameInput.style.backgroundColor = '#e9ecef'; // Visually indicate it's not editable
     }
 
     const bookingForm = document.getElementById('bookingForm');
@@ -80,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const serviceType = document.getElementById('serviceType').value;
             const bookingDate = document.getElementById('bookingDate').value;
             const bookingTime = document.getElementById('bookingTime').value;
             const address = document.getElementById('address').value;
@@ -93,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Content-Type': 'application/json',
                         'x-auth-token': token, // Send the token
                     },
-                    body: JSON.stringify({ serviceType, bookingDate, bookingTime, address, description }),
+                    body: JSON.stringify({ serviceId, bookingDate, bookingTime, address, description }),
                 });
 
                 const data = await res.json();

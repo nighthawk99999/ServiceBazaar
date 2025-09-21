@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SERVICES PAGE SCRIPT ---
     async function initServicesPage(container) {
         try {
+            const isProfessional = localStorage.getItem('isProfessional') === 'true';
             // Check for a search query in the URL
             const urlParams = new URLSearchParams(window.location.search);
             const searchTerm = urlParams.get('search');
@@ -129,6 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     return 'fa-toolbox'; // Default icon
                 };
 
+                // Professionals should not see a "Book Now" button
+                const bookNowButton = isProfessional
+                    ? `<a href="#" class="btn btn-primary professional-book-notice" onclick="event.preventDefault(); alert('Please log in as a customer to book services.');">Book Now</a>`
+                    : `<a href="booking.html?serviceId=${service._id}&serviceName=${encodeURIComponent(service.service_name)}" class="btn btn-primary">Book Now</a>`;
+
                 serviceCard.innerHTML = `
                     <div class="service-card-icon"><i class="fa-solid ${getIconClass(service.categories[0] || '')}"></i></div>
                     <h3>${service.service_name}</h3>
@@ -136,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>${service.description}</p>
                         <p style="margin-top: 1rem; font-size: 0.9rem;"><strong>Provider:</strong> ${service.professional_id.name}</p>
                     </div>
-                    <a href="booking.html?service=${encodeURIComponent(service.service_name)}" class="btn btn-primary">Book Now</a>
+                    ${bookNowButton}
                 `;
                 container.appendChild(serviceCard);
             });
@@ -277,34 +283,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Customer Login
                 const emailOrUsername = formElement.querySelector('#username').value;
                 const password = formElement.querySelector('#password').value;
-                // Try email first
-                let res = await fetch(`${API_BASE_URL}/api/login`, {
+
+                // Determine if input is likely an email
+                const isEmail = emailOrUsername.includes('@');
+                const loginPayload = isEmail ? { email: emailOrUsername, password } : { name: emailOrUsername, password };
+
+                const res = await fetch(`${API_BASE_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: emailOrUsername, password })
+                    body: JSON.stringify(loginPayload)
                 });
-                let data = await res.json();
+                const data = await res.json();
+
                 if (res.ok) {
                     // Save token and name, then redirect
                     localStorage.setItem('token', data.token);
+                    localStorage.setItem('isProfessional', 'false'); // Explicitly set role
                     localStorage.setItem('customerName', data.name || emailOrUsername);
                     window.location.href = 'index.html';
-                    return;
+                } else if (res.status === 403) {
+                    alert('This is a professional account. Please use the Partner Login page.');
                 } else {
-                    // Try username as name
-                    res = await fetch(`${API_BASE_URL}/api/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: emailOrUsername, password })
-                    });
-                    data = await res.json();
-                    if (res.ok) {
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('customerName', data.name || emailOrUsername);
-                        window.location.href = 'index.html';
-                        return;
-                    }
-                    alert(data.error || 'Invalid credentials.'); // Use the latest error message
+                    alert(data.error || 'Invalid credentials. Please try again.');
                 }
             } else {
                 // Customer Registration
@@ -332,10 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleContainer = formElement.querySelector('.toggle-container');
         const loginBtn = formElement.querySelector('#loginBtn');
         const registerBtn = formElement.querySelector('#registerBtn');
-        const professionalServices = [
-            "Plumbing", "Electrical", "Masonry", "Carpentry", "Painting",
-            "Cleaning", "Gardening", "Appliance Repair", "Pest Control", "Home Tutoring"
-        ];
 
         const renderProfessionalForm = () => {
             if (authMode === 'login') {
@@ -354,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 title.innerText = `Join as a Professional`;
                 
-                let servicesHTML = professionalServices.map(service => {
+                let servicesHTML = SERVICE_CATEGORIES.map(service => {
                     const serviceId = `service-${service.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`;
                     return `
                         <div class="service-tag">
@@ -416,32 +412,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Professional Login
                 const emailOrUsername = formElement.querySelector('#username').value;
                 const password = formElement.querySelector('#password').value;
-                let res = await fetch(`${API_BASE_URL}/api/professional/login`, {
+
+                const isEmail = emailOrUsername.includes('@');
+                const loginPayload = isEmail ? { email: emailOrUsername, password } : { name: emailOrUsername, password };
+
+                const res = await fetch(`${API_BASE_URL}/api/professional/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: emailOrUsername, password })
+                    body: JSON.stringify(loginPayload)
                 });
-                let data = await res.json();
+                const data = await res.json();
+
                 if (res.ok) {
                     localStorage.setItem('token', data.token);
+                    localStorage.setItem('isProfessional', 'true'); // Set role to professional
                     localStorage.setItem('customerName', data.name || emailOrUsername);
                     window.location.href = 'index.html';
-                    return;
+                } else if (res.status === 403) {
+                    alert('This is a customer account. Please use the Customer Login page.');
                 } else {
-                    // Try name as login
-                    res = await fetch(`${API_BASE_URL}/api/professional/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: emailOrUsername, password })
-                    });
-                    data = await res.json();
-                    if (res.ok) {
-                        localStorage.setItem('token', data.token); // Save token
-                        localStorage.setItem('customerName', data.name || emailOrUsername); // Save name
-                        window.location.href = 'index.html';
-                        return;
-                    }
-                    alert(data.message || data.error);
+                    alert(data.error || 'Invalid credentials. Please try again.');
                 }
             } else {
                 // Professional Registration

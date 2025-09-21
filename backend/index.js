@@ -43,7 +43,14 @@ app.post('/api/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ error: 'Email already registered' });
+    if (exists) {
+      // Check if this email is already registered as a professional
+      const isProfessional = await Professional.findById(exists._id);
+      if (isProfessional) {
+        return res.status(400).json({ error: 'This email is registered as a Professional. Please use a different email.' });
+      }
+      return res.status(400).json({ error: 'Email already registered' });
+    }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = new User({ name, email, password: hashedPassword });
@@ -68,6 +75,12 @@ app.post('/api/login', async (req, res) => {
     const user = await User.findOne(query);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
+    // --- FIX: Block professionals from using the customer login ---
+    const isProfessional = await Professional.findById(user._id);
+    if (isProfessional) {
+      return res.status(403).json({ error: 'This is a professional account. Please use the Partner Login.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
@@ -83,7 +96,7 @@ app.post('/api/login', async (req, res) => {
 // Professional registration
 app.post('/api/professional/register', async (req, res) => {
   try {
-    const { name, email, password, location } = req.body; // Added location
+    const { name, email, password, location, categories } = req.body; // Added categories
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ error: 'Email already registered' });
 
@@ -93,7 +106,7 @@ app.post('/api/professional/register', async (req, res) => {
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    const professional = new Professional({ _id: user._id, location }); // Link to User
+    const professional = new Professional({ _id: user._id, location, categories: categories || [] }); // Link to User and save categories
     await professional.save();
 
     res.status(201).json({ message: 'Professional registered!', userId: user._id, professionalId: professional._id });
@@ -134,13 +147,19 @@ app.post('/api/professional/login', async (req, res) => {
 // Create a new booking
 app.post('/api/bookings', auth, async (req, res) => {
   try {
-    const { serviceType, bookingDate, bookingTime, address, description } = req.body;
+    // --- NEW VALIDATION ---
+    // Check if the user making the request is a professional
+    const isProfessional = await Professional.findById(req.user.id);
+    if (isProfessional) {
+      return res.status(403).json({ error: 'Professionals are not allowed to book services.' });
+    }
 
-    // Find a service that matches the serviceType to get the professional's ID
-    // Note: This is a simple approach. A better way would be to send service_id from the frontend.
-    const service = await Service.findOne({ service_name: serviceType });
+    const { serviceId, bookingDate, bookingTime, address, description } = req.body;
+
+    // Find the service by its ID to get the professional's ID
+    const service = await Service.findById(serviceId);
     if (!service) {
-      return res.status(404).json({ error: `No professional offers the service: ${serviceType}` });
+      return res.status(404).json({ error: `Service not found.` });
     }
 
     const newBooking = new Booking({
@@ -218,6 +237,24 @@ app.post('/api/services', auth, async (req, res) => {
 app.get('/api/services', async (req, res) => {
   try {
     const services = await Service.find().populate('professional_id', 'name email'); // Populate professional details
+    res.json(services);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+// Get services for the logged-in professional
+app.get('/api/services/my', auth, async (req, res) => {
+  try {
+    // Check if the user is a professional
+    const professional = await Professional.findById(req.user.id);
+    if (!professional) {
+      return res.status(403).json({ msg: 'Access denied. Not a professional.' });
+    }
+
+    // Find services created by this professional
+    const services = await Service.find({ professional_id: req.user.id }).sort({ createdAt: -1 });
     res.json(services);
   } catch (err) {
     console.error(err);
