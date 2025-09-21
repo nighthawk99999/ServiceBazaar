@@ -96,14 +96,14 @@ app.post('/api/login', async (req, res) => {
 // Professional registration
 app.post('/api/professional/register', async (req, res) => {
   try {
-    const { name, email, password, location, categories } = req.body; // Added categories
+    const { name, email, password, phone, location, categories } = req.body; // Added phone
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ error: 'Email already registered' });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword, phone }); // Add phone to User model
     await user.save();
 
     const professional = new Professional({ _id: user._id, location, categories: categories || [] }); // Link to User and save categories

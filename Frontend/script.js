@@ -438,13 +438,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const name = formElement.querySelector('#regFullName').value;
                 const email = formElement.querySelector('#regEmail').value;
                 const password = formElement.querySelector('#regPassword').value;
+                const phone = formElement.querySelector('#regPhone').value;
                 const location = formElement.querySelector('#regLocation').value;
                 const selectedServices = Array.from(formElement.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
 
                 const res = await fetch(`${API_BASE_URL}/api/professional/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password, location, categories: selectedServices })
+                    body: JSON.stringify({ name, email, password, phone, location, categories: selectedServices })
                 });
                 const data = await res.json();
                 alert(data.message || data.error);
