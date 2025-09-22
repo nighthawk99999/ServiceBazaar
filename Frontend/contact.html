@@ -52,18 +52,18 @@
 
             <div class="contact-form-container">
                 <h3>Send us a Message</h3>
-                <form onsubmit="alert('Thank you for your message!'); return false;">
+                <form id="contactForm">
                     <div class="form-group">
-                        <input type="text" placeholder="Your Name" required>
+                        <input type="text" id="contactName" placeholder="Your Name" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="Your Email" required>
+                        <input type="email" id="contactEmail" placeholder="Your Email" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" placeholder="Subject" required>
+                        <input type="text" id="contactSubject" placeholder="Subject" required>
                     </div>
                     <div class="form-group">
-                        <textarea placeholder="Your Message" rows="6" required></textarea>
+                        <textarea id="contactMessage" placeholder="Your Message" rows="6" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit Message</button>
                 </form>

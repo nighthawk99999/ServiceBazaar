@@ -42,6 +42,16 @@ db.once('open', () => {
 app.post('/api/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    // --- SERVER-SIDE VALIDATION ---
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+    // --- Password Length Validation ---
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+    }
+
     const exists = await User.findOne({ email });
     if (exists) {
       // Check if this email is already registered as a professional
@@ -53,9 +63,13 @@ app.post('/api/register', async (req, res) => {
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword, role: 'customer' });
     await user.save();
-    res.status(201).json({ message: 'User registered!', userId: user._id });
+
+    // --- FIX: Generate and return a token upon successful registration ---
+    const payload = { user: { id: user.id, isProfessional: false } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(201).json({ token, name: user.name, userId: user._id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server Error' });
@@ -75,9 +89,8 @@ app.post('/api/login', async (req, res) => {
     const user = await User.findOne(query);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-    // --- FIX: Block professionals from using the customer login ---
-    const isProfessional = await Professional.findById(user._id);
-    if (isProfessional) {
+    // Block professionals from using the customer login by checking their role
+    if (user.role === 'professional') {
       return res.status(403).json({ error: 'This is a professional account. Please use the Partner Login.' });
     }
 
@@ -97,19 +110,45 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/professional/register', async (req, res) => {
   try {
     const { name, email, password, phone, location, categories } = req.body; // Added phone
+
+    // --- SERVER-SIDE VALIDATION ---
+    if (!name || !email || !password || !phone || !location) {
+      return res.status(400).json({ error: 'Name, email, password, phone, and location are required.' });
+    }
+    // --- Password Length Validation ---
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+    }
+    // Validate email format
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+    // Validate 10-digit phone number
+    if (!/^\d{10}$/.test(phone)) {
+      return res.status(400).json({ error: 'Please enter a valid 10-digit phone number.' });
+    }
+    // Validate 6-digit pincode for location
+    if (!/^\d{6}$/.test(location)) {
+      return res.status(400).json({ error: 'Please enter a valid 6-digit pincode for the location.' });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ error: 'Email already registered' });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = new User({ name, email, password: hashedPassword, phone }); // Add phone to User model
+    const user = new User({ name, email, password: hashedPassword, phone, role: 'professional' }); // Add phone and role
     await user.save();
 
     const professional = new Professional({ _id: user._id, location, categories: categories || [] }); // Link to User and save categories
     await professional.save();
 
-    res.status(201).json({ message: 'Professional registered!', userId: user._id, professionalId: professional._id });
+    // --- FIX: Generate and return a token upon successful registration ---
+    const payload = { user: { id: user.id, isProfessional: true } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(201).json({ token, name: user.name, userId: user._id, professionalId: professional._id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server Error' });
@@ -132,12 +171,12 @@ app.post('/api/professional/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const professional = await Professional.findById(user._id);
-    if (!professional) return res.status(403).json({ error: 'Not a professional account' });
+    // Ensure the user has a 'professional' role
+    if (user.role !== 'professional') return res.status(403).json({ error: 'Not a professional account' });
 
     const payload = { user: { id: user.id, isProfessional: true } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, name: user.name, userId: user._id, professionalId: professional._id });
+    res.json({ token, name: user.name, userId: user._id, professionalId: user._id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server Error' });

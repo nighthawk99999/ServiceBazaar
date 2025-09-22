@@ -52,14 +52,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const isProfessional = localStorage.getItem('isProfessional') === 'true';
-    if (isProfessional) {
-        document.body.innerHTML = '<h1>Access Denied</h1><p>Professionals cannot book services. Redirecting you to your dashboard...</p>';
-        setTimeout(() => {
-            window.location.href = 'professional_dashboard.html';
-        }, 2000);
-        return;
-    }
     // Pre-select service from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const serviceId = urlParams.get('serviceId');

@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="icon"><i class="fa-solid fa-envelope"></i></span>
                     </div>
                     <div class="input-group">
-                        <input type="password" id="regPassword" placeholder="Create Password" required>
+                        <input type="password" id="regPassword" placeholder="Create Password" required minlength="8" title="Password must be at least 8 characters long.">
                         <span class="icon"><i class="fa-solid fa-lock"></i></span>
                     </div>
                 `;
@@ -317,7 +317,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ name, email, password })
                 });
                 const data = await res.json();
-                alert(data.message || data.error);
+                
+                if (res.ok) {
+                    // --- FIX: Handle successful registration by logging in and redirecting ---
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('isProfessional', 'false');
+                    localStorage.setItem('customerName', data.name);
+                    window.location.href = 'index.html'; // Redirect to homepage
+                } else {
+                    alert(data.error || 'Registration failed. Please try again.');
+                }
             }
         });
         renderCustomerForm();
@@ -370,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="icon"><i class="fa-solid fa-envelope"></i></span>
                     </div>
                     <div class="input-group">
-                        <input type="tel" id="regPhone" placeholder="Phone Number" required>
+                        <input type="tel" id="regPhone" placeholder="10-Digit Phone Number" required pattern="[0-9]{10}" maxlength="10" title="Please enter a valid 10-digit phone number.">
                         <span class="icon"><i class="fa-solid fa-phone"></i></span>
                     </div>
                     <div class="service-selection-container">
@@ -378,11 +387,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="service-tags-grid">${servicesHTML}</div>
                     </div>
                      <div class="input-group">
-                        <input type="text" id="regLocation" placeholder="City / Pincode" required>
+                        <input type="tel" id="regLocation" placeholder="6-Digit Pincode" required pattern="[0-9]{6}" maxlength="6" title="Please enter a valid 6-digit pincode.">
                         <span class="icon"><i class="fa-solid fa-map-marker-alt"></i></span>
                     </div>
                     <div class="input-group">
-                        <input type="password" id="regPassword" placeholder="Create Password" required>
+                        <input type="password" id="regPassword" placeholder="Create Password" required minlength="8" title="Password must be at least 8 characters long.">
                         <span class="icon"><i class="fa-solid fa-lock"></i></span>
                     </div>
                 `;
@@ -448,7 +457,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ name, email, password, phone, location, categories: selectedServices })
                 });
                 const data = await res.json();
-                alert(data.message || data.error);
+
+                if (res.ok) {
+                    // --- FIX: Handle successful registration by logging in and redirecting ---
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('isProfessional', 'true');
+                    localStorage.setItem('customerName', data.name);
+                    window.location.href = 'index.html'; // Redirect to homepage
+                } else {
+                    alert(data.error || 'Registration failed. Please try again.');
+                }
             }
         });
 
