@@ -319,11 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 
                 if (res.ok) {
-                    // --- FIX: Handle successful registration by logging in and redirecting ---
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('isProfessional', 'false');
-                    localStorage.setItem('customerName', data.name);
-                    window.location.href = 'index.html'; // Redirect to homepage
+                    alert(data.message); // e.g., "Account created successfully. Please log in."
+                    loginBtn.click(); // Programmatically switch to the login view
                 } else {
                     alert(data.error || 'Registration failed. Please try again.');
                 }
@@ -459,11 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (res.ok) {
-                    // --- FIX: Handle successful registration by logging in and redirecting ---
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('isProfessional', 'true');
-                    localStorage.setItem('customerName', data.name);
-                    window.location.href = 'index.html'; // Redirect to homepage
+                    alert(data.message); // e.g., "Professional account created successfully. Please log in."
+                    loginBtn.click(); // Programmatically switch to the login view
                 } else {
                     alert(data.error || 'Registration failed. Please try again.');
                 }

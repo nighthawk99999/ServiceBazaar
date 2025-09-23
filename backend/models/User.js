@@ -18,6 +18,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false, // Optional for customers, but provided for professionals
   },
+  role: {
+    type: String,
+    enum: ['customer', 'professional'],
+    default: 'customer'
+  },
 }, {
   timestamps: true,
   // Use a different name for the schema object if you're also defining a variable named UserSchema
