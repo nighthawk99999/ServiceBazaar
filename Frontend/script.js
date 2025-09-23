@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_BASE_URL = 'http://localhost:5000'; // Use local backend for testing
-
     // --- INITIALIZER ---
     function initPage() {
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -95,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const searchTerm = urlParams.get('search');
 
-            const res = await fetch(`${API_BASE_URL}/api/services`);
+            const res = await fetch(`${API_URL}/api/services`);
             if (!res.ok) {
                 throw new Error('Failed to fetch services');
             }
@@ -120,15 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const serviceCard = document.createElement('article');
                 serviceCard.className = 'service-card-new';
 
-                // A simple way to get an icon based on category
-                const getIconClass = (category) => {
-                    const cat = category.toLowerCase();
-                    if (cat.includes('plumb')) return 'fa-wrench';
-                    if (cat.includes('electr')) return 'fa-bolt';
-                    if (cat.includes('paint')) return 'fa-paint-roller';
-                    if (cat.includes('clean')) return 'fa-broom';
-                    return 'fa-toolbox'; // Default icon
-                };
+                const iconClass = 'fa-toolbox'; // Default icon for all services now
 
                 // Professionals should not see a "Book Now" button
                 const bookNowButton = isProfessional
@@ -136,11 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     : `<a href="booking.html?serviceId=${service._id}&serviceName=${encodeURIComponent(service.service_name)}" class="btn btn-primary">Book Now</a>`;
 
                 serviceCard.innerHTML = `
-                    <div class="service-card-icon"><i class="fa-solid ${getIconClass(service.categories[0] || '')}"></i></div>
+                    <div class="service-card-icon"><i class="fa-solid ${iconClass}"></i></div>
                     <h3>${service.service_name}</h3>
                     <div class="service-card-body">
                         <p>${service.description}</p>
-                        <p style="margin-top: 1rem; font-size: 0.9rem;"><strong>Provider:</strong> ${service.professional_id.name}</p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem;"><strong>Provider:</strong> ${service.professional_id ? service.professional_id.name : 'N/A'}</p>
                     </div>
                     ${bookNowButton}
                 `;
@@ -163,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/bookings`, {
+            const res = await fetch(`${API_URL}/api/bookings`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -178,27 +168,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // If the response is not successful, it might be an error or just an empty list.
             if (!res.ok) {
-                // We can assume a non-OK status with no bookings means "No bookings yet".
-                // A real server error (500) will be caught below.
-                const bookings = await res.json().catch(() => []); // Attempt to parse, default to [] on failure
-                if (bookings.length === 0) {
-                    container.innerHTML = '<p>You have no bookings yet.</p>';
-                    return;
-                }
                 throw new Error('Failed to fetch bookings');
             }
 
             const bookings = await res.json();
 
-            // Clear the "Loading..." message and render bookings
             container.innerHTML = '';
+            if (bookings.length === 0) {
+                container.innerHTML = '<p>You have no bookings yet.</p>';
+                return;
+            }
+
             bookings.forEach(booking => {
                 const bookingCard = document.createElement('div');
                 bookingCard.className = 'booking-card';
 
                 const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+                const isProfessionalView = localStorage.getItem('isProfessional') === 'true';
+
+                // Conditionally show the other party's information
+                const relevantPartyInfo = isProfessionalView
+                    ? `<p><strong>Customer:</strong> ${booking.user_id.name} (${booking.user_id.email})</p>`
+                    : `<p><strong>Professional:</strong> ${booking.professional_id.name}</p>`;
                 
                 bookingCard.innerHTML = `
                     <h3>${booking.service_id.service_name}</h3>
@@ -206,8 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
                     <p><strong>Address:</strong> ${booking.address}</p>
                     <p><strong>Description:</strong> ${booking.description}</p>
-                    <p><strong>Customer:</strong> ${booking.user_id.name}</p>
-                    <p><strong>Professional:</strong> ${booking.professional_id.name}</p>
+                    ${relevantPartyInfo}
                 `;
                 container.appendChild(bookingCard);
             });
@@ -288,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isEmail = emailOrUsername.includes('@');
                 const loginPayload = isEmail ? { email: emailOrUsername, password } : { name: emailOrUsername, password };
 
-                const res = await fetch(`${API_BASE_URL}/api/login`, {
+                const res = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(loginPayload)
@@ -311,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const name = formElement.querySelector('#regUsername').value;
                 const email = formElement.querySelector('#regEmail').value;
                 const password = formElement.querySelector('#regPassword').value;
-                const res = await fetch(`${API_BASE_URL}/api/register`, {
+                const res = await fetch(`${API_URL}/api/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
@@ -422,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isEmail = emailOrUsername.includes('@');
                 const loginPayload = isEmail ? { email: emailOrUsername, password } : { name: emailOrUsername, password };
 
-                const res = await fetch(`${API_BASE_URL}/api/professional/login`, {
+                const res = await fetch(`${API_URL}/api/professional/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(loginPayload)
@@ -448,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const location = formElement.querySelector('#regLocation').value;
                 const selectedServices = Array.from(formElement.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
 
-                const res = await fetch(`${API_BASE_URL}/api/professional/register`, {
+                const res = await fetch(`${API_URL}/api/professional/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, phone, location, categories: selectedServices })

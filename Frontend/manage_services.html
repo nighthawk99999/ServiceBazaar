@@ -30,13 +30,6 @@
                         <label for="description">Service Description</label>
                         <textarea id="description" rows="4" placeholder="Describe what this service includes..." class="input-group" required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select id="category" class="input-group" required>
-                            <option value="" disabled selected>Select a category...</option>
-                        </select>
-                        <small>Select the most relevant category for this service.</small>
-                    </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Add Service</button>
                 </form>
             </div>
@@ -67,17 +60,6 @@
 
             const servicesContainer = document.getElementById('myServicesContainer');
             const addServiceForm = document.getElementById('addServiceForm');
-            const categoryDropdown = document.getElementById('category');
-
-            // Populate the category dropdown
-            if (categoryDropdown && typeof SERVICE_CATEGORIES !== 'undefined') {
-                SERVICE_CATEGORIES.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    categoryDropdown.appendChild(option);
-                });
-            }
 
             // Fetch and display the professional's existing services
             const fetchMyServices = async () => {
@@ -100,7 +82,6 @@
                         card.innerHTML = `
                             <h3>${service.service_name}</h3>
                             <p>${service.description}</p>
-                            <p><strong>Category:</strong> ${service.categories.join(', ')}</p>
                             <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
                                 <button class="btn btn-primary" style="flex: 1;">Edit</button>
                                 <button class="btn btn-accent delete-btn" style="flex: 1; background: #dc3545;" data-service-id="${service._id}">Delete</button>
@@ -119,12 +100,11 @@
                 e.preventDefault();
                 const service_name = document.getElementById('serviceName').value;
                 const description = document.getElementById('description').value;
-                const category = document.getElementById('category').value;
 
                 const res = await fetch(`${API_URL}/api/services`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-                    body: JSON.stringify({ service_name, description, categories: [category] })
+                    body: JSON.stringify({ service_name, description })
                 });
 
                 if (res.ok) {

@@ -14,10 +14,6 @@ const ServiceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  categories: {
-    type: [String], // Array of Strings
-    required: true,
-  },
 }, { timestamps: true });
 
 const Service = mongoose.model('Service', ServiceSchema);

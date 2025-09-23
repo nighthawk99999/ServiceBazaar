@@ -168,6 +168,74 @@ app.post('/api/professional/login', async (req, res) => {
 
 // ... (The rest of your routes for bookings, services, etc.)
 
+// Create a new service (for professionals)
+app.post('/api/services', auth, async (req, res) => {
+  try {
+    // 1. Check if the user is a professional
+    const professional = await Professional.findById(req.user.id);
+    if (!professional) {
+      return res.status(403).json({ msg: 'Only professionals can add services.' });
+    }
+
+    // 2. Get data from request body
+    const { service_name, description } = req.body;
+    if (!service_name || !description) {
+      return res.status(400).json({ msg: 'Please provide service name and description.' });
+    }
+
+    // 3. Create and save the new service
+    const newService = new Service({
+      professional_id: req.user.id, // Link service to the logged-in professional
+      service_name,
+      description,
+    });
+    await newService.save();
+    res.status(201).json(newService);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Get all services for the logged-in professional
+app.get('/api/services/my', auth, async (req, res) => {
+  try {
+    const services = await Service.find({ professional_id: req.user.id });
+    if (!services) {
+      return res.status(404).json({ msg: 'No services found for this professional.' });
+    }
+    res.json(services);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Delete a service (for professionals)
+app.delete('/api/services/:id', auth, async (req, res) => {
+  try {
+    // 1. Find the service by ID
+    const service = await Service.findById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ msg: 'Service not found.' });
+    }
+
+    // 2. Check if the logged-in user owns this service
+    if (service.professional_id.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized to delete this service.' });
+    }
+
+    // 3. Delete the service and any associated bookings
+    await Booking.deleteMany({ service_id: req.params.id });
+    await Service.findByIdAndDelete(req.params.id);
+
+    res.json({ msg: 'Service and associated bookings removed.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // Create a new booking
 app.post('/api/bookings', auth, async (req, res) => {
   try {
@@ -178,16 +246,25 @@ app.post('/api/bookings', auth, async (req, res) => {
 
     const { serviceId, bookingDate, bookingTime, address, description } = req.body;
 
+    // --- VALIDATION: Check if booking time is in the past ---
+    const bookingDateTime = new Date(`${bookingDate}T${bookingTime}`);
+    if (isNaN(bookingDateTime.getTime())) {
+      return res.status(400).json({ error: 'Invalid date or time format provided.' });
+    }
+    if (bookingDateTime < new Date()) {
+      return res.status(400).json({ error: 'Booking date and time cannot be in the past.' });
+    }
+
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ error: `Service not found.` });
     }
-
+    
     const newBooking = new Booking({
       user_id: req.user.id,
       service_id: service._id,
       professional_id: service.professional_id,
-      schedule: new Date(`${bookingDate}T${bookingTime}`),
+      schedule: bookingDateTime, // Use the validated date object
       address,
       description,
       status: 'pending'
@@ -198,6 +275,17 @@ app.post('/api/bookings', auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+// Get all services (public)
+app.get('/api/services', async (req, res) => {
+  try {
+    const services = await Service.find().populate('professional_id', 'name');
+    res.json(services);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
@@ -218,6 +306,7 @@ app.get('/api/bookings', auth, async (req, res) => {
       .populate('user_id', 'name email')
       .populate('professional_id', 'name')
       .sort({ schedule: -1 });
+
     res.json(bookings);
   } catch (err) {
     console.error(err);

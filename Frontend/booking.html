@@ -49,6 +49,7 @@
   <footer><!-- Footer will be loaded here --></footer>
 
   <script src="layout.js"></script>
+  <script src="config.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -62,6 +63,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate the service name and make it look like a disabled input
         serviceNameInput.value = decodeURIComponent(serviceNameFromURL);
         serviceNameInput.style.backgroundColor = '#e9ecef'; // Visually indicate it's not editable
+    }
+
+    // --- Add Date and Time Constraints ---
+    const bookingDateInput = document.getElementById('bookingDate');
+    const bookingTimeInput = document.getElementById('bookingTime');
+
+    if (bookingDateInput) {
+        // Set minimum date to tomorrow
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Format to YYYY-MM-DD for the 'min' attribute
+        const year = tomorrow.getFullYear();
+        const month = String(tomorrow.getMonth() + 1).padStart(2, '0'); // JS months are 0-11
+        const day = String(tomorrow.getDate()).padStart(2, '0');
+        bookingDateInput.min = `${year}-${month}-${day}`;
+    }
+
+    if (bookingTimeInput) {
+        // Set time range from 9 AM to 9 PM
+        bookingTimeInput.min = '09:00';
+        bookingTimeInput.max = '21:00';
     }
 
     const bookingForm = document.getElementById('bookingForm');
@@ -82,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const description = document.getElementById('description').value;
 
             try {
-                const res = await fetch('http://localhost:5000/api/bookings', {
+                const res = await fetch(`${API_URL}/api/bookings`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -95,8 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.ok) {
                     alert('Booking confirmed! We will contact you shortly.');
-                    bookingForm.reset(); // Clear the form
-                    // Optionally redirect to a "my bookings" page
+                    window.location.href = 'index.html'; // Redirect to home page
                 } else {
                     alert(data.error || data.msg || 'Failed to confirm booking.');
                 }

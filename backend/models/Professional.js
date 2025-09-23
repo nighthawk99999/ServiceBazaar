@@ -10,6 +10,10 @@ const ProfessionalSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  categories: {
+    type: [String],
+    default: [],
+  },
   is_verified: {
     type: Boolean,
     default: false,
