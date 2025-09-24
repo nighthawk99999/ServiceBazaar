@@ -40,6 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (servicesContainer) {
             initServicesPage(servicesContainer);
         }
+        const bookingForm = document.getElementById("bookingForm");
+        if (bookingForm) {
+            initBookingPage(bookingForm);
+        }
     }
 
     // --- HERO SEARCH SCRIPT (HOMEPAGE) ---
@@ -159,6 +163,99 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching services:', error);
             container.innerHTML = '<p>Could not load services. Please try again later.</p>';
         }
+    }
+
+    // --- BOOKING PAGE SCRIPT ---
+    function initBookingPage(bookingForm) {
+        const token = localStorage.getItem('token');
+        if (!token || localStorage.getItem('isProfessional') === 'true') {
+            alert('You must be logged in as a customer to book a service.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const serviceNameDisplay = document.getElementById('serviceNameDisplay');
+        const serviceIdInput = document.getElementById('serviceId');
+        const bookingDateInput = document.getElementById('bookingDate');
+        const bookingTimeSelect = document.getElementById('bookingTime');
+
+        // Get service details from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const serviceId = urlParams.get('serviceId');
+        const serviceName = urlParams.get('serviceName');
+
+        if (!serviceId || !serviceName) {
+            alert('No service selected. Redirecting to services page.');
+            window.location.href = 'services.html';
+            return;
+        }
+
+        serviceNameDisplay.textContent = `You are booking: ${decodeURIComponent(serviceName)}`;
+        serviceIdInput.value = serviceId;
+
+        // Set the minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        bookingDateInput.setAttribute('min', today);
+
+        // --- Generate 15-minute time slots from 9 AM to 8 PM ---
+        const generateTimeSlots = () => {
+            const startTime = 9 * 60; // 9:00 AM in minutes
+            const endTime = 20 * 60;  // 8:00 PM in minutes
+            const interval = 15;
+
+            for (let minutes = startTime; minutes <= endTime; minutes += interval) {
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+
+                // Format for backend (HH:MM)
+                const timeString24 = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+                
+                // Format for display (e.g., 8:15 AM)
+                const hours12 = hours % 12 === 0 ? 12 : hours % 12;
+                const ampm = hours < 12 ? 'AM' : 'PM';
+                const timeString12 = `${hours12}:${String(mins).padStart(2, '0')} ${ampm}`;
+
+                const option = new Option(timeString12, timeString24);
+                bookingTimeSelect.add(option);
+            }
+        };
+
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const bookingDetails = {
+                serviceId: serviceIdInput.value,
+                bookingDate: bookingDateInput.value,
+                bookingTime: bookingTimeSelect.value,
+                address: document.getElementById('address').value,
+                description: document.getElementById('description').value,
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/api/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-auth-token': token
+                    },
+                    body: JSON.stringify(bookingDetails)
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Booking successful! You can view its status in "My Bookings".');
+                    window.location.href = 'mybookings.html';
+                } else {
+                    throw new Error(data.error || 'Failed to create booking.');
+                }
+            } catch (error) {
+                console.error('Booking failed:', error);
+                alert(`Booking failed: ${error.message}`);
+            }
+        });
+
+        generateTimeSlots(); // Call the function to populate the dropdown
     }
 
     // --- MY BOOKINGS PAGE SCRIPT ---
@@ -330,14 +427,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const formFields = formElement.querySelector("#formFields");
         const title = formElement.parentElement.querySelector("#formTitle");
         const actionBtn = formElement.querySelector("#formActionBtn");
-        const loginOptions = formElement.querySelector("#loginOptions");
         const toggleContainer = formElement.querySelector('.toggle-container');
         const loginBtn = formElement.querySelector('#loginBtn');
         const registerBtn = formElement.querySelector('#registerBtn');
         const renderCustomerForm = () => {
              if (authMode === 'login') {
                 title.innerText = `Welcome Back!`;
-                loginOptions.style.display = 'flex';
                 formFields.innerHTML = `
                     <div class="input-group">
                         <input type="text" id="username" placeholder="Username or Email" required>
@@ -351,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 actionBtn.innerText = "Login";
             } else {
                 title.innerText = `Create Your Account`;
-                loginOptions.style.display = 'none';
                 formFields.innerHTML = `
                     <div class="input-group">
                         <input type="text" id="regUsername" placeholder="Full Name" required>

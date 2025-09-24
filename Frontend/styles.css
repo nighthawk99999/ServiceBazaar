@@ -185,8 +185,6 @@ h1, h2, h3, h4 {
 .login-branding-panel h1 { color: white; font-size: 2.5rem; }
 .login-branding-panel p { font-size: 1.1rem; }
 
-.login-options { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0; font-size: 0.9rem; }
-.login-options a { text-decoration: none; color: var(--primary-color); }
 .user-type-switch { text-align: center; margin-top: 1.5rem; }
 .user-type-switch a { color: var(--primary-color); font-size: 0.9rem; text-decoration: none; }
 
@@ -290,10 +288,8 @@ footer {
     pointer-events: none;
     transition: color 0.3s ease;
 }
-.login-card input,
-.login-card select,
-.login-card textarea,
-.modal-content input,
+.login-card input, .login-card select, .login-card textarea,
+.modal-content input, 
 .modal-content select,
 .modal-content textarea {
     width: 100%;
@@ -307,6 +303,11 @@ footer {
     -moz-appearance: none;
     appearance: none;
     color: var(--text-color);
+    resize: none; /* Prevent users from resizing textareas */
+}
+
+.login-card textarea, .modal-content textarea {
+    border-radius: var(--border-radius); /* Use standard radius for textareas, not pill shape */
 }
 .input-group input, 
 .input-group select,
@@ -319,10 +320,8 @@ footer {
     background-position: right 1.5rem center;
     background-size: 1em;
 }
-.login-card input:focus,
-.login-card select:focus,
-.login-card textarea:focus,
-.modal-content input:focus,
+.login-card input:focus, .login-card select:focus, .login-card textarea:focus,
+.modal-content input:focus, 
 .modal-content select:focus,
 .modal-content textarea:focus {
     border-color: var(--primary-color);

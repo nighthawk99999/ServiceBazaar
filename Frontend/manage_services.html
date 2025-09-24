@@ -40,12 +40,13 @@
             cursor: pointer;
         }
         /* Align modal textareas with the site's theme */
-        .modal-content .input-group textarea {
-            border-radius: var(--border-radius); /* Use standard radius, not pill shape */
-            padding: 14px 20px; /* Consistent padding */
+        /* Apply correct padding to the textarea to make space for the icon */
+        .modal-content textarea.input-group {
+             padding-left: 50px !important;
         }
-        .modal-content .input-group .icon {
-            /* Adjust icon position for textareas */
+
+        /* Position the icon at the top for textareas, not in the middle */
+        .modal-content .input-group:has(textarea) .icon {
             top: 20px;
             transform: none;
         }
@@ -71,7 +72,7 @@
                         <span class="icon"><i class="fa-solid fa-toolbox"></i></span>
                     </div>
                     <div class="input-group">
-                        <textarea id="description" rows="4" placeholder="Describe what this service includes..." required></textarea>
+                        <textarea id="description" rows="4" placeholder="Describe what this service includes..." required class="input-group"></textarea>
                         <span class="icon"><i class="fa-solid fa-file-alt"></i></span>
                     </div>
                     <div class="input-group">
@@ -108,7 +109,7 @@
                         <span class="icon"><i class="fa-solid fa-toolbox"></i></span>
                     </div>
                     <div class="input-group">
-                        <textarea id="editDescription" rows="4" placeholder="Service Description" required></textarea>
+                        <textarea id="editDescription" rows="4" placeholder="Service Description" required class="input-group"></textarea>
                         <span class="icon"><i class="fa-solid fa-file-alt"></i></span>
                     </div>
                     <div class="input-group">
@@ -160,10 +161,16 @@
                     services.forEach(service => {
                         const card = document.createElement('div');
                         card.className = 'booking-card';
+
+                        // Safely handle the price display for services that might not have one
+                        const priceHTML = (service.price !== undefined && service.price !== null)
+                            ? `<p style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-top: 1rem;">₹${Number(service.price).toLocaleString('en-IN')}</p>`
+                            : ''; // If no price, don't show anything
+
                         card.innerHTML = `
                             <h3>${service.service_name}</h3>
                             <p>${service.description}</p>
-                            <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-top: 1rem;">₹${service.price.toLocaleString('en-IN')}</p>
+                            ${priceHTML}
                             <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
                                 <button class="btn btn-primary edit-btn" style="flex: 1;" data-service-id="${service._id}">Edit</button>
                                 <button class="btn btn-accent delete-btn" style="flex: 1; background: #dc3545;" data-service-id="${service._id}">Delete</button>
