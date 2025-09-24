@@ -18,7 +18,7 @@
                 <p>Here is a list of your incoming and past jobs.</p>
                 <a href="manage_services.html" class="btn btn-primary" style="margin-top: 1rem;">Manage My Services</a>
             </div>
-            <div id="jobsContainer" class="bookings-grid">
+            <div id="jobsContainer" class="bookings-grid" style="min-height: 200px;">
                 <!-- Jobs will be dynamically inserted here -->
                 <p>Loading your jobs...</p>
             </div> 
@@ -29,52 +29,6 @@
 
     <script src="layout.js"></script>
     <script src="config.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const token = localStorage.getItem('token');
-            const container = document.getElementById('jobsContainer');
-
-            if (!token) {
-                window.location.href = 'login_professional.html';
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_URL}/api/bookings`, {
-                    headers: { 'x-auth-token': token }
-                });
-
-                if (!res.ok) throw new Error('Failed to fetch jobs.');
-
-                const jobs = await res.json();
-                container.innerHTML = ''; // Clear loading message
-
-                if (jobs.length === 0) {
-                    container.innerHTML = '<p>You have no jobs yet. Ensure your services are set up to receive bookings.</p>';
-                    return;
-                }
-
-                jobs.forEach(job => {
-                    const jobCard = document.createElement('div');
-                    jobCard.className = 'booking-card';
-                    const scheduleDate = new Date(job.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-                    
-                    jobCard.innerHTML = `
-                        <h3>${job.service_id.service_name}</h3>
-                        <p><strong>Status:</strong> <span class="status-${job.status}">${job.status}</span></p>
-                        <p><strong>Customer:</strong> ${job.user_id.name} (${job.user_id.email})</p>
-                        <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
-                        <p><strong>Customer Address:</strong> ${job.address}</p>
-                        <p><strong>Job Details:</strong> ${job.description}</p>
-                    `;
-                    container.appendChild(jobCard);
-                });
-
-            } catch (error) {
-                console.error('Error fetching jobs:', error);
-                container.innerHTML = '<p>Could not load your jobs. Please try again later.</p>';
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

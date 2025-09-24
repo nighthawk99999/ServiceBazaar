@@ -1,40 +1,31 @@
 import mongoose from 'mongoose';
 
-const BookingSchema = new mongoose.Schema({
-  user_id: { // FK to User
+const bookingSchema = new mongoose.Schema({
+  user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  service_id: { // FK to Service
+  service_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service',
     required: true,
   },
-  professional_id: { // FK to Professional (User)
+  professional_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'User', // Referencing the User model, as professionals are also users
     required: true,
   },
-  schedule: {
-    type: Date,
-    required: true,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
+  schedule: { type: Date, required: true },
+  address: { type: String, required: true },
+  description: { type: String, required: true },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'completed', 'cancelled'],
+    enum: ['pending', 'accepted', 'rejected', 'completed', 'cancelled'], // Added 'accepted' and 'rejected'
     default: 'pending',
   },
 }, { timestamps: true });
 
-const Booking = mongoose.model('Booking', BookingSchema);
+const Booking = mongoose.model('Booking', bookingSchema);
 
 export default Booking;

@@ -178,9 +178,12 @@ app.post('/api/services', auth, async (req, res) => {
     }
 
     // 2. Get data from request body
-    const { service_name, description } = req.body;
-    if (!service_name || !description) {
-      return res.status(400).json({ msg: 'Please provide service name and description.' });
+    const { service_name, description, price } = req.body;
+    if (!service_name || !description || price === undefined) {
+      return res.status(400).json({ msg: 'Please provide service name, description, and price.' });
+    }
+    if (isNaN(price) || price < 0) {
+      return res.status(400).json({ msg: 'Please provide a valid, non-negative price.' });
     }
 
     // 3. Create and save the new service
@@ -188,6 +191,7 @@ app.post('/api/services', auth, async (req, res) => {
       professional_id: req.user.id, // Link service to the logged-in professional
       service_name,
       description,
+      price,
     });
     await newService.save();
     res.status(201).json(newService);
@@ -233,6 +237,73 @@ app.delete('/api/services/:id', auth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
+  }
+});
+
+// Update a service (for professionals)
+app.put('/api/services/:id', auth, async (req, res) => {
+  try {
+    const { service_name, description, price } = req.body;
+
+    // 1. Find the service by ID
+    let service = await Service.findById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ msg: 'Service not found.' });
+    }
+
+    // 2. Check if the logged-in user owns this service
+    if (service.professional_id.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized to update this service.' });
+    }
+
+    // 3. Update the fields and save
+    service.service_name = service_name || service.service_name;
+    service.description = description || service.description;
+    if (price !== undefined) {
+      if (isNaN(price) || price < 0) {
+        return res.status(400).json({ msg: 'Please provide a valid, non-negative price.' });
+      }
+      service.price = price;
+    }
+    await service.save();
+
+    res.json(service);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Update booking status (for professionals: accept/reject)
+// This route is placed before '/api/bookings/:id' to ensure it's matched correctly.
+app.patch('/api/bookings/:id/status', auth, async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    // 1. Validate the incoming status
+    if (!status || !['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status provided. Must be "accepted" or "rejected".' });
+    }
+
+    // 2. Find the booking and verify the professional
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+
+    // 3. Ensure the logged-in user is the correct professional for this booking
+    if (booking.professional_id.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'You are not authorized to update this booking.' });
+    }
+
+    // 4. Update the status and save
+    booking.status = status;
+    await booking.save();
+
+    res.json(booking);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -313,7 +384,6 @@ app.get('/api/bookings', auth, async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 });
-
 // ... (The rest of your file should be here)
 // Make sure all your other routes like /api/services are included below this line.
 // I have omitted them for brevity but they are necessary for your app to function.

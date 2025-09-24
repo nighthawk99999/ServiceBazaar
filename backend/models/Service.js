@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
-const ServiceSchema = new mongoose.Schema({
-  professional_id: { // FK to Professional (which is User's _id)
+const serviceSchema = new mongoose.Schema({
+  professional_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model, as Professional's _id is User's _id
+    ref: 'User',
     required: true,
   },
   service_name: {
@@ -14,8 +14,13 @@ const ServiceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
 }, { timestamps: true });
 
-const Service = mongoose.model('Service', ServiceSchema);
+const Service = mongoose.model('Service', serviceSchema);
 
 export default Service;

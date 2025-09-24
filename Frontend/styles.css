@@ -185,12 +185,6 @@ h1, h2, h3, h4 {
 .login-branding-panel h1 { color: white; font-size: 2.5rem; }
 .login-branding-panel p { font-size: 1.1rem; }
 
-.social-login { text-align: center; margin: 1.5rem 0; }
-.social-login p { margin-bottom: 1rem; color: #6c757d; }
-.social-btn { display: inline-block; padding: 10px 20px; border-radius: 50px; text-decoration: none; color: white; margin: 0 5px; font-weight: bold; }
-.google-btn { background: #db4437; }
-.facebook-btn { background: #3b5998; }
-
 .login-options { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0; font-size: 0.9rem; }
 .login-options a { text-decoration: none; color: var(--primary-color); }
 .user-type-switch { text-align: center; margin-top: 1.5rem; }
@@ -296,9 +290,12 @@ footer {
     pointer-events: none;
     transition: color 0.3s ease;
 }
-.login-card input, 
+.login-card input,
 .login-card select,
-.login-card textarea {
+.login-card textarea,
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
     width: 100%;
     background: white;
     border: 1px solid #ced4da;
@@ -322,9 +319,12 @@ footer {
     background-position: right 1.5rem center;
     background-size: 1em;
 }
-.login-card input:focus, 
+.login-card input:focus,
 .login-card select:focus,
-.login-card textarea:focus {
+.login-card textarea:focus,
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15);
     outline: none;
