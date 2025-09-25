@@ -17,6 +17,11 @@
                 <h2>My Bookings</h2>
                 <p>Here is a list of your scheduled and past services.</p>
             </div>
+            <!-- Container for new booking acceptance notifications -->
+            <div id="notificationsContainer" class="notifications-grid">
+                <!-- New notifications will be dynamically inserted here -->
+            </div>
+
             <div id="bookingsContainer" class="bookings-grid">
                 <!-- Bookings will be dynamically inserted here by script.js -->
                 <p>Loading your bookings...</p>
@@ -26,8 +31,44 @@
 
     <footer><!-- Footer will be loaded here --></footer>
 
+    <!-- Rating Modal -->
+    <div id="ratingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeRatingModal">&times;</span>
+            <h3 style="text-align: center; margin-bottom: 1.5rem;">Rate Your Service</h3>
+            <form id="ratingForm">
+                <input type="hidden" id="ratingBookingId">
+                <div style="text-align: center; margin-bottom: 1rem; font-size: 2rem; color: #ffc107;">
+                    <i class="far fa-star star-rating" data-value="1"></i>
+                    <i class="far fa-star star-rating" data-value="2"></i>
+                    <i class="far fa-star star-rating" data-value="3"></i>
+                    <i class="far fa-star star-rating" data-value="4"></i>
+                    <i class="far fa-star star-rating" data-value="5"></i>
+                </div>
+                <input type="hidden" id="ratingValue" value="0">
+
+                <div class="input-group">
+                    <textarea id="reviewText" rows="4" placeholder="Share your experience..." required class="input-group"></textarea>
+                    <span class="icon"><i class="fa-solid fa-comment-dots"></i></span>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
     <script src="layout.js"></script>
     <script src="config.js"></script>
     <script src="script.js"></script>
+    <script>
+        // This inline script is for modal-specific logic that doesn't need to be in the main script.js
+        document.addEventListener('DOMContentLoaded', () => {
+            const ratingModal = document.getElementById('ratingModal');
+            const closeModalBtn = document.getElementById('closeRatingModal');
+            if (closeModalBtn) closeModalBtn.onclick = () => ratingModal.style.display = 'none';
+            window.onclick = (event) => {
+                if (event.target == ratingModal) ratingModal.style.display = 'none';
+            };
+        });
+    </script>
 </body>
 </html>

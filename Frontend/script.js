@@ -44,6 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bookingForm) {
             initBookingPage(bookingForm);
         }
+        const ratingForm = document.getElementById("ratingForm");
+        if (ratingForm) {
+            initRatingModal(ratingForm);
+        }
     }
 
     // --- HERO SEARCH SCRIPT (HOMEPAGE) ---
@@ -67,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const value = this.value.toLowerCase();
             closeSuggestions();
             if (!value) return;
-            const suggestions = services.filter(service => service.toLowerCase().startsWith(value));
+            const suggestions = services.filter(service => service.toLowerCase().includes(value));
             if (suggestions.length === 0) return;
             const suggestionBox = document.createElement("ul");
             suggestionBox.classList.add("suggestions");
@@ -96,32 +100,84 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SERVICES PAGE SCRIPT ---
     async function initServicesPage(container) {
         try {
+            // Get filter controls
+            const serviceSearchInput = document.getElementById('serviceSearchInput');
+            const pincodeFilter = document.getElementById('pincodeFilter');
+            const ratingFilter = document.getElementById('ratingFilter');
+            const sortControl = document.getElementById('sortControl');
+
             const token = localStorage.getItem('token');
             const isProfessional = localStorage.getItem('isProfessional') === 'true';
             // Check for a search query in the URL
             const urlParams = new URLSearchParams(window.location.search);
             const searchTerm = urlParams.get('search');
-
+            
+            // If a search term came from the homepage, populate the new search bar with it
+            if (searchTerm) {
+                serviceSearchInput.value = searchTerm;
+            }
+            
             const res = await fetch(`${API_URL}/api/services`);
             if (!res.ok) {
                 throw new Error('Failed to fetch services');
             }
             let services = await res.json();
 
-            // If there's a search term, filter the services
-            if (searchTerm) {
-                const lowerCaseSearchTerm = searchTerm.toLowerCase();
-                services = services.filter(service => 
-                    service.service_name.toLowerCase().includes(lowerCaseSearchTerm) ||
-                    service.description.toLowerCase().includes(lowerCaseSearchTerm)
-                );
-            }
+            const renderServices = () => {
+                let filteredServices = [...services];
 
-            if (services.length === 0) {
-                container.innerHTML = searchTerm ? `<p>No services found matching "<strong>${searchTerm}</strong>". Try a different search.</p>` : '<p>No services are available at the moment. Please check back later.</p>';
-                return;
-            }
+                // 1. Filter by the text in the service search input
+                const currentSearchTerm = serviceSearchInput.value.trim();
+                if (currentSearchTerm) {
+                    const lowerCaseSearchTerm = currentSearchTerm.toLowerCase();
+                    filteredServices = filteredServices.filter(service => 
+                        service.service_name.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        service.description.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        (service.professional_id && service.professional_id.name.toLowerCase().includes(lowerCaseSearchTerm))
+                    );
+                }
 
+                // 2. Filter by pincode
+                const pincode = pincodeFilter.value.trim();
+                if (pincode && pincode.length === 6) {
+                    filteredServices = filteredServices.filter(s => s.professional_id && s.professional_id.location === pincode);
+                }
+
+                // 3. Filter by rating
+                const minRating = parseFloat(ratingFilter.value);
+                if (minRating > 0) {
+                    filteredServices = filteredServices.filter(s => (s.average_rating || 0) >= minRating);
+                }
+
+                // 4. Sort services
+                const sortBy = sortControl.value;
+                if (sortBy === 'price_asc') {
+                    filteredServices.sort((a, b) => a.price - b.price);
+                } else if (sortBy === 'price_desc') {
+                    filteredServices.sort((a, b) => b.price - a.price);
+                }
+
+                displayServices(filteredServices, token, isProfessional); // Pass token and isProfessional
+            };
+
+            // Add event listeners to controls
+            // Use 'input' for text fields for a live search/filter experience
+            serviceSearchInput.addEventListener('input', renderServices);
+            pincodeFilter.addEventListener('input', renderServices);
+            // Use 'change' for select dropdowns
+            [ratingFilter, sortControl].forEach(el => {
+                el.addEventListener('change', renderServices);
+            });
+
+            // Initial render
+            renderServices();
+
+        } catch (error) {
+            console.error('Error fetching services:', error);
+            container.innerHTML = '<p>Could not load services. Please try again later.</p>';
+        }
+
+        function displayServices(services, token, isProfessional) {
             container.innerHTML = ''; // Clear the "Loading..." message
             services.forEach(service => {
                 const serviceCard = document.createElement('article');
@@ -147,21 +203,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? `<p style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-top: 1rem;">₹${Number(service.price).toLocaleString('en-IN')}</p>`
                     : ''; // If no price, don't show anything
 
+                // Safely handle rating display
+                const ratingHTML = (service.average_rating)
+                    ? `<div class="rating" style="margin-top: 0.5rem;">
+                           <i class="fa-solid fa-star"></i> ${service.average_rating.toFixed(1)} (${service.review_count || 0} reviews)
+                       </div>`
+                    : '<div class="rating" style="margin-top: 0.5rem; font-style: italic; color: #888;">No reviews yet</div>';
+
+                // Safely create the provider link only if a professional exists
+                const providerHTML = service.professional_id
+                    ? `<a href="professional_profile.html?id=${service.professional_id._id}">${service.professional_id.name}</a>`
+                    : 'N/A';
+
                 serviceCard.innerHTML = `
                     <div class="service-card-icon"><i class="fa-solid ${iconClass}"></i></div>
                     <h3>${service.service_name}</h3>
                     <div class="service-card-body">
                         <p>${service.description}</p>
                         ${priceHTML}
-                        <p style="margin-top: 1rem; font-size: 0.9rem;"><strong>Provider:</strong> ${service.professional_id ? service.professional_id.name : 'N/A'}</p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem;">
+                            <strong>Provider:</strong> ${providerHTML}
+                        </p>
+                        ${ratingHTML}
                     </div>
                     ${bookNowButton}
                 `;
                 container.appendChild(serviceCard);
             });
-        } catch (error) {
-            console.error('Error fetching services:', error);
-            container.innerHTML = '<p>Could not load services. Please try again later.</p>';
         }
     }
 
@@ -229,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 bookingTime: bookingTimeSelect.value,
                 address: document.getElementById('address').value,
                 description: document.getElementById('description').value,
+                paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value
             };
 
             try {
@@ -244,7 +313,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (res.ok) {
-                    alert('Booking successful! You can view its status in "My Bookings".');
+                    if (bookingDetails.paymentMethod === 'cod') {
+                        alert('Booking confirmed! Please pay the professional in cash after the service is completed.');
+                    } else {
+                        alert('Booking confirmed! Your booking is scheduled and can be viewed in "My Bookings".');
+                    }
                     window.location.href = 'mybookings.html';
                 } else {
                     throw new Error(data.error || 'Failed to create booking.');
@@ -261,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MY BOOKINGS PAGE SCRIPT ---
     async function initMyBookingsPage(container) {
         const token = localStorage.getItem('token');
+        const notificationsContainer = document.getElementById('notificationsContainer');
 
         // If user is not logged in, redirect to login page
         if (!token) {
@@ -290,10 +364,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const bookings = await res.json();
 
+            notificationsContainer.innerHTML = '';
             container.innerHTML = '';
             if (bookings.length === 0) {
                 container.innerHTML = '<p>You have no bookings yet.</p>';
                 return;
+            }
+
+            // Separate newly accepted bookings for notification
+            const acceptedNotifications = bookings.filter(b => b.status === 'accepted' && !sessionStorage.getItem(`notified_${b._id}`));
+
+            if (acceptedNotifications.length > 0) {
+                acceptedNotifications.forEach(booking => {
+                    const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+                    const notificationCard = document.createElement('div');
+                    notificationCard.className = 'notification-card';
+
+                    // Safely get the service name, handling cases where the service might be deleted.
+                    const serviceName = booking.service_id ? booking.service_id.service_name : 'a deleted service';
+
+                    // Safely generate professional info, handling cases where the professional might be deleted.
+                    let professionalInfoHTML = '<p><strong>Professional:</strong> Information not available.</p>';
+                    if (booking.professional_id) {
+                        professionalInfoHTML = `<p>
+                            <strong>Professional:</strong> ${booking.professional_id.name} <br>
+                            <strong>Contact Number:</strong> <a href="tel:${booking.professional_id.phone}">${booking.professional_id.phone || 'Not provided'}</a>
+                        </p>`;
+                    }
+
+                    notificationCard.innerHTML = `
+                        <div class="notification-header">
+                            <i class="fa-solid fa-bell"></i>
+                            <h3>Your Booking has been Accepted!</h3>
+                        </div>
+                        <p>Your service for <strong>${serviceName}</strong> scheduled on <strong>${scheduleDate}</strong> has been confirmed by the professional.</p>
+                        ${professionalInfoHTML}
+                    `;
+                    notificationsContainer.appendChild(notificationCard);
+
+                    // Use sessionStorage to mark as notified for this session only
+                    // The notification will reappear on the next login/visit.
+                    sessionStorage.setItem(`notified_${booking._id}`, 'true');
+                });
             }
 
             bookings.forEach(booking => {
@@ -303,18 +415,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
                 const isProfessionalView = localStorage.getItem('isProfessional') === 'true';
 
+                // Add a "Rate Service" button for completed jobs for customers
+                let actionButton = '';
+                if (!isProfessionalView && booking.status === 'completed' && !booking.is_rated) {
+                    actionButton = `<button class="btn btn-accent rate-btn" data-booking-id="${booking._id}" style="margin-top: 1rem;">Rate Service</button>`;
+                }
+
                 // Conditionally show the other party's information
-                const relevantPartyInfo = isProfessionalView
-                    ? `<p><strong>Customer:</strong> ${booking.user_id.name} (${booking.user_id.email})</p>`
-                    : `<p><strong>Professional:</strong> ${booking.professional_id.name}</p>`;
+                let relevantPartyInfo;
+                if (isProfessionalView) {
+                    relevantPartyInfo = `<p><strong>Customer:</strong> ${booking.user_id.name} (${booking.user_id.email})</p>`;
+                } else {
+                    // For customer view, show more details for accepted/completed jobs
+                    if (booking.professional_id) {
+                        if (['accepted', 'completed'].includes(booking.status)) {
+                            relevantPartyInfo = `<p><strong>Professional:</strong> ${booking.professional_id.name}<br><strong>Contact:</strong> <a href="tel:${booking.professional_id.phone}">${booking.professional_id.phone || 'Not provided'}</a></p>`;
+                        } else {
+                            relevantPartyInfo = `<p><strong>Professional:</strong> ${booking.professional_id.name}</p>`;
+                        }
+                    } else {
+                        relevantPartyInfo = `<p><strong>Professional:</strong> N/A</p>`;
+                    }
+                }
                 
+                // Display if the service has been rated
+                const ratedInfo = !isProfessionalView && booking.is_rated
+                    ? `<p style="color: var(--primary-color); font-style: italic; margin-top: 1rem;"><i class="fa-solid fa-star"></i> You have rated this service.</p>`
+                    : '';
+                
+                // Display Payment Method
+                const paymentMethodHTML = booking.paymentMethod 
+                    ? `<p><strong>Payment Method:</strong> <span style="text-transform: capitalize; font-weight: bold;">${booking.paymentMethod === 'cod' ? 'Cash on Delivery' : booking.paymentMethod}</span></p>`
+                    : '';
+
+                // Safely get service name for the main card
+                const serviceNameForCard = booking.service_id ? booking.service_id.service_name : 'Deleted Service';
+
                 bookingCard.innerHTML = `
-                    <h3>${booking.service_id.service_name}</h3>
+                    <h3>${serviceNameForCard}</h3>
                     <p><strong>Status:</strong> <span class="status-${booking.status}">${booking.status}</span></p>
                     <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
-                    <p><strong>Address:</strong> ${booking.address}</p>
-                    <p><strong>Description:</strong> ${booking.description}</p>
+                    ${paymentMethodHTML}
                     ${relevantPartyInfo}
+                    ${actionButton}
+                    ${ratedInfo}
                 `;
                 container.appendChild(bookingCard);
             });
@@ -323,6 +467,63 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching bookings:', error);
             container.innerHTML = '<p>Could not load your bookings. Please try again later.</p>';
         }
+
+        // Event delegation for "Rate Service" button
+        container.addEventListener('click', (e) => {
+            if (e.target.classList.contains('rate-btn')) {
+                const bookingId = e.target.dataset.bookingId;
+                const ratingModal = document.getElementById('ratingModal');
+                const ratingBookingIdInput = document.getElementById('ratingBookingId');
+                
+                ratingBookingIdInput.value = bookingId;
+                ratingModal.style.display = 'block';
+            }
+        });
+    }
+
+    // --- RATING MODAL SCRIPT ---
+    function initRatingModal(ratingForm) {
+        const stars = ratingForm.querySelectorAll('.star-rating');
+        const ratingValueInput = document.getElementById('ratingValue');
+
+        stars.forEach(star => {
+            star.addEventListener('mouseover', () => {
+                const hoverValue = star.dataset.value;
+                stars.forEach(s => {
+                    s.classList.toggle('fas', s.dataset.value <= hoverValue);
+                    s.classList.toggle('far', s.dataset.value > hoverValue);
+                });
+            });
+
+            star.addEventListener('click', () => {
+                const clickValue = star.dataset.value;
+                ratingValueInput.value = clickValue;
+            });
+        });
+
+        ratingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bookingId = document.getElementById('ratingBookingId').value;
+            const rating = ratingValueInput.value;
+            const reviewText = document.getElementById('reviewText').value;
+
+            if (rating === '0') {
+                alert('Please select a star rating.');
+                return;
+            }
+
+            try {
+                // This is a new API endpoint you would need to create on your backend
+                const res = await fetch(`${API_URL}/api/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-auth-token': localStorage.getItem('token') },
+                    body: JSON.stringify({ bookingId, rating, reviewText })
+                });
+                if (!res.ok) throw new Error('Failed to submit review.');
+                alert('Thank you for your feedback!');
+                window.location.reload();
+            } catch (error) { alert(`Error: ${error.message}`); }
+        });
     }
 
     // --- PROFESSIONAL DASHBOARD SCRIPT ---
@@ -377,11 +578,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 ` : '';
 
+                // Display Payment Method for professional
+                const paymentMethodHTML = job.paymentMethod 
+                    ? `<p><strong>Payment Method:</strong> <span style="text-transform: capitalize; font-weight: bold;">${job.paymentMethod === 'cod' ? 'Cash on Delivery' : job.paymentMethod}</span></p>`
+                    : '';
+
                 jobCard.innerHTML = `
                     <h3>${job.service_id.service_name}</h3>
                     <p><strong>Status:</strong> <span class="status-${job.status}">${job.status}</span></p>
                     <p><strong>Customer:</strong> ${job.user_id.name} (${job.user_id.email})</p>
                     <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
+                    ${paymentMethodHTML}
                     <p><strong>Customer Address:</strong> ${job.address}</p>
                     <p><strong>Job Details:</strong> ${job.description}</p>
                     ${actionButtons}
@@ -434,9 +641,9 @@ document.addEventListener('DOMContentLoaded', () => {
              if (authMode === 'login') {
                 title.innerText = `Welcome Back!`;
                 formFields.innerHTML = `
-                    <div class="input-group">
-                        <input type="text" id="username" placeholder="Username or Email" required>
-                        <span class="icon"><i class="fa-solid fa-user"></i></span>
+                     <div class="input-group">
+                        <input type="email" id="email" placeholder="Email Address" required>
+                        <span class="icon"><i class="fa-solid fa-envelope"></i></span>
                     </div>
                     <div class="input-group">
                         <input type="password" id="password" placeholder="Password" required>
@@ -481,17 +688,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (authMode === 'login') {
                 // Customer Login
-                const emailOrUsername = formElement.querySelector('#username').value;
+                const email = formElement.querySelector('#email').value;
                 const password = formElement.querySelector('#password').value;
-
-                // Determine if input is likely an email
-                const isEmail = emailOrUsername.includes('@');
-                const loginPayload = isEmail ? { email: emailOrUsername, password } : { name: emailOrUsername, password };
 
                 const res = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(loginPayload)
+                    body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
 
@@ -499,7 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Save token and name, then redirect
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('isProfessional', 'false'); // Explicitly set role
-                    localStorage.setItem('customerName', data.name || emailOrUsername);
+                    localStorage.setItem('customerName', data.name || email);
                     window.location.href = 'index.html';
                 } else if (res.status === 403) {
                     alert('This is a professional account. Please use the Partner Login page.');
@@ -519,7 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 
                 if (res.ok) {
-                    alert(data.message); // e.g., "Account created successfully. Please log in."
+                    alert("Account created successfully! Please log in.");
                     loginBtn.click(); // Programmatically switch to the login view
                 } else {
                     alert(data.error || 'Registration failed. Please try again.');
@@ -544,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title.innerText = `Partner Login`;
                 formFields.innerHTML = `
                     <div class="input-group">
-                        <input type="text" id="username" placeholder="Username or Email" required>
+                        <input type="email" id="email" placeholder="Email Address" required>
                         <span class="icon"><i class="fa-solid fa-envelope"></i></span>
                     </div>
                     <div class="input-group">
@@ -616,23 +819,20 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (authMode === 'login') {
                 // Professional Login
-                const emailOrUsername = formElement.querySelector('#username').value;
+                const email = formElement.querySelector('#email').value;
                 const password = formElement.querySelector('#password').value;
-
-                const isEmail = emailOrUsername.includes('@');
-                const loginPayload = isEmail ? { email: emailOrUsername, password } : { name: emailOrUsername, password };
 
                 const res = await fetch(`${API_URL}/api/professional/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(loginPayload)
+                    body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
 
                 if (res.ok) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('isProfessional', 'true'); // Set role to professional
-                    localStorage.setItem('customerName', data.name || emailOrUsername);
+                    localStorage.setItem('customerName', data.name || email);
                     window.location.href = 'index.html';
                 } else if (res.status === 403) {
                     alert('This is a customer account. Please use the Customer Login page.');
@@ -656,7 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (res.ok) {
-                    alert(data.message); // e.g., "Professional account created successfully. Please log in."
+                    alert("Professional account created successfully. Your account is under review and will be activated shortly. You can log in once approved.");
                     loginBtn.click(); // Programmatically switch to the login view
                 } else {
                     alert(data.error || 'Registration failed. Please try again.');

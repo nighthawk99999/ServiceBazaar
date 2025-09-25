@@ -241,6 +241,65 @@ footer {
 .service-card-body { flex-grow: 1; margin-bottom: 1.5rem; }
 .service-card-new .btn { width: 100%; margin-top: auto; }
 
+/* === Unified Search Bar (Services Page) === */
+.unified-search-bar {
+    display: flex;
+    background-color: #fff;
+    border-radius: 50px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+    margin-bottom: 3rem;
+    align-items: center;
+}
+
+.unified-search-bar .search-input-wrapper {
+    flex-grow: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.unified-search-bar .main-search {
+    flex-grow: 2; /* Give more space to the main search */
+}
+
+.unified-search-bar .pincode-search {
+    flex-grow: 0;
+    flex-basis: 150px; /* Give a fixed base width */
+}
+
+.unified-search-bar .search-input-wrapper i {
+    position: absolute;
+    left: 20px;
+    color: #adb5bd;
+}
+
+.unified-search-bar input,
+.unified-search-bar select {
+    border: none;
+    background: transparent;
+    padding: 1rem;
+    font-size: 1rem;
+    color: var(--text-color);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.unified-search-bar input {
+    width: 100%;
+    padding-left: 50px;
+}
+
+.unified-search-bar select {
+    padding: 1rem 1.5rem;
+    border-left: 1px solid #dee2e6;
+    cursor: pointer;
+    font-weight: 700;
+    color: #6c757d;
+}
+
 /* === Contact Page === */
 .contact-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; align-items: flex-start; }
 .contact-details h3, .contact-form-container h3 { margin-bottom: 1.5rem; font-size: 1.8rem; }
@@ -410,24 +469,64 @@ footer {
 }
 
 .booking-card .status-pending {
-    color: #ffc107; /* Amber for pending */
+    color: var(--accent-color); /* Orange for pending */
     font-weight: bold;
+    text-transform: capitalize;
 }
 
-.booking-card .status-confirmed {
+.booking-card .status-accepted {
     color: #28a745; /* Green for confirmed */
     font-weight: bold;
+    text-transform: capitalize;
 }
 
 .booking-card .status-completed {
-    color: #007bff; /* Blue for completed */
+    color: var(--primary-color); /* Blue for completed */
     font-weight: bold;
+    text-transform: capitalize;
 }
 
+.booking-card .status-rejected,
 .booking-card .status-cancelled {
-    color: #dc3545; /* Red for cancelled */
+    color: #dc3545; /* Red for cancelled/rejected */
     font-weight: bold;
+    text-transform: capitalize;
 }
+
+/* === Booking Notification Card === */
+.notifications-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.notification-card {
+    background: #e7f1ff; /* Light blue background to stand out */
+    border-left: 5px solid var(--primary-color);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.notification-card .notification-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.notification-card .notification-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.notification-card .notification-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--primary-dark);
+}
+
+.notification-card p { margin-bottom: 0.5rem; }
 
 /* === User Profile Dropdown (New) === */
 .user-profile-container {
@@ -505,3 +604,48 @@ footer {
     background-color: #e9ecef;
     margin: 0;
 }
+
+/* === Payment Method Selection (Booking Page) === */
+.payment-method-selection {
+    margin-bottom: 1.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: var(--border-radius);
+}
+
+.payment-method-selection h4 {
+    margin-bottom: 0;
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.payment-option {
+    position: relative;
+}
+
+.payment-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.payment-option label {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas: "icon title" "icon desc";
+    align-items: center;
+    gap: 0 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s ease;
+}
+.payment-option:last-child label { border-bottom: none; }
+.payment-option label i { grid-area: icon; font-size: 1.5rem; color: var(--primary-color); }
+.payment-option label span { grid-area: title; font-weight: 700; }
+.payment-option label small { grid-area: desc; color: #6c757d; font-size: 0.9rem; }
+.payment-option.disabled label { color: #adb5bd; }
+.payment-option.disabled label i { color: #adb5bd; }
+.payment-option input[type="radio"]:checked + label { background-color: #e7f1ff; }

@@ -24,6 +24,11 @@ const bookingSchema = new mongoose.Schema({
     enum: ['pending', 'accepted', 'rejected', 'completed', 'cancelled'], // Added 'accepted' and 'rejected'
     default: 'pending',
   },
+  paymentMethod: {
+    type: String,
+    enum: ['cod', 'online'],
+    default: 'cod'
+  },
 }, { timestamps: true });
 
 const Booking = mongoose.model('Booking', bookingSchema);

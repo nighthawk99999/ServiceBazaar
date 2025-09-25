@@ -17,6 +17,29 @@
     </section>
 
     <section class="container">
+      <!-- Unified Search and Filter Bar -->
+      <div class="unified-search-bar">
+        <div class="search-input-wrapper main-search">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="serviceSearchInput" placeholder="Search for services (e.g., 'Painting')">
+        </div>
+        <div class="search-input-wrapper pincode-search">
+            <i class="fa-solid fa-map-marker-alt"></i>
+            <input type="text" id="pincodeFilter" placeholder="Pincode" pattern="[0-9]{6}" maxlength="6">
+        </div>
+        <select id="ratingFilter" aria-label="Minimum Rating">
+          <option value="0" selected>Min. Rating</option>
+          <option value="4">4 Stars & Up</option>
+          <option value="3">3 Stars & Up</option>
+          <option value="2">2 Stars & Up</option>
+        </select>
+        <select id="sortControl" aria-label="Sort By">
+          <option value="default" selected>Sort By</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+      </div>
+
       <div id="servicesContainer" class="services-grid-new">
         <!-- Service cards will be dynamically inserted here by script.js -->
         <p>Loading services...</p>

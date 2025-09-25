@@ -39,12 +39,33 @@
                 <span class="icon"><i class="fa-solid fa-map-location-dot"></i></span>
             </div>
 
+            <!-- Payment Method Selection -->
+            <div class="payment-method-selection">
+                <h4>Select Payment Method</h4>
+                <div class="payment-option">
+                    <input type="radio" id="cod" name="paymentMethod" value="cod" checked>
+                    <label for="cod">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                        <span>Cash on Delivery</span>
+                        <small>Pay the professional directly after the service is completed.</small>
+                    </label>
+                </div>
+                <div class="payment-option disabled">
+                    <input type="radio" id="online" name="paymentMethod" value="online" disabled>
+                    <label for="online">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>Pay Online (Coming Soon)</span>
+                        <small>Pay securely with UPI, Credit/Debit Card, or Net Banking.</small>
+                    </label>
+                </div>
+            </div>
+
             <div class="input-group">
                 <textarea id="description" rows="4" placeholder="Describe the job in detail..." required class="input-group"></textarea>
                 <span class="icon"><i class="fa-solid fa-file-alt"></i></span>
             </div>
             
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Confirm Booking</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Confirm & Proceed to Payment</button>
         </form>
     </div>
 </main>

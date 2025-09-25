@@ -124,7 +124,7 @@ app.post('/api/professional/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = new User({ name, email, password: hashedPassword, phone, role: 'professional' });
+    const user = new User({ name, email, password: hashedPassword, phone, location, role: 'professional' });
     await user.save();
 
     const professional = new Professional({ _id: user._id, location, categories: categories || [] });
@@ -315,7 +315,7 @@ app.post('/api/bookings', auth, async (req, res) => {
       return res.status(403).json({ error: 'Professionals are not allowed to book services.' });
     }
 
-    const { serviceId, bookingDate, bookingTime, address, description } = req.body;
+    const { serviceId, bookingDate, bookingTime, address, description, paymentMethod } = req.body;
 
     // --- VALIDATION: Check if booking time is in the past ---
     const bookingDateTime = new Date(`${bookingDate}T${bookingTime}`);
@@ -338,7 +338,8 @@ app.post('/api/bookings', auth, async (req, res) => {
       schedule: bookingDateTime, // Use the validated date object
       address,
       description,
-      status: 'pending'
+      status: 'pending',
+      paymentMethod: paymentMethod || 'cod' // Default to 'cod' if not provided
     });
 
     const booking = await newBooking.save();
@@ -352,8 +353,29 @@ app.post('/api/bookings', auth, async (req, res) => {
 // Get all services (public)
 app.get('/api/services', async (req, res) => {
   try {
-    const services = await Service.find().populate('professional_id', 'name');
-    res.json(services);
+    // 1. Fetch all services and populate the professional's name and location.
+    let services = await Service.find().populate('professional_id', 'name location').lean();
+
+    // 2. Filter out services where the professional has been deleted (professional_id is null)
+    services = services.filter(service => service.professional_id !== null);
+
+    // 3. For each remaining service, calculate its average rating and review count.
+    const servicesWithRatings = await Promise.all(services.map(async (service) => {
+      const reviews = await Review.find({ service_id: service._id });
+      
+      let average_rating = 0;
+      if (reviews.length > 0) {
+        const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+        average_rating = totalRating / reviews.length;
+      }
+
+      return {
+        ...service,
+        average_rating,
+        review_count: reviews.length,
+      };
+    }));
+    res.json(servicesWithRatings);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -372,11 +394,14 @@ app.get('/api/bookings', auth, async (req, res) => {
       query = { user_id: req.user.id };
     }
 
-    const bookings = await Booking.find(query)
+    let bookings = await Booking.find(query)
       .populate('service_id', 'service_name description')
       .populate('user_id', 'name email')
-      .populate('professional_id', 'name')
+      .populate('professional_id', 'name phone')
       .sort({ schedule: -1 });
+
+    // Filter out bookings where the professional or service has been deleted
+    bookings = bookings.filter(booking => booking.professional_id && booking.service_id);
 
     res.json(bookings);
   } catch (err) {

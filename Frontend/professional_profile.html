@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Profile - ServiceBazaar</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="navbar"><!-- Header will be loaded here --></header>
+
+    <main class="container" id="profileContainer">
+        <!-- Profile content will be dynamically inserted here -->
+        <p>Loading professional profile...</p>
+    </main>
+
+    <footer><!-- Footer will be loaded here --></footer>
+
+    <script src="layout.js"></script>
+    <script src="config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const profileContainer = document.getElementById('profileContainer');
+            const urlParams = new URLSearchParams(window.location.search);
+            const professionalId = urlParams.get('id');
+
+            if (!professionalId) {
+                profileContainer.innerHTML = '<p>No professional specified. <a href="services.html">Go back to services.</a></p>';
+                return;
+            }
+
+            try {
+                // This is a new API endpoint you would need to create on your backend
+                const res = await fetch(`${API_URL}/api/professionals/${professionalId}`);
+                if (!res.ok) throw new Error('Could not fetch profile.');
+                
+                const professional = await res.json();
+
+                // --- Build the profile safely to prevent XSS ---
+                profileContainer.innerHTML = ''; // Clear loading text
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'section-header';
+
+                const nameH1 = document.createElement('h1');
+                nameH1.textContent = professional.name; // Use textContent for safety
+
+                const memberSinceP = document.createElement('p');
+                memberSinceP.textContent = `Member since ${new Date(professional.createdAt).getFullYear()}`;
+
+                headerDiv.appendChild(nameH1);
+                headerDiv.appendChild(memberSinceP);
+                profileContainer.appendChild(headerDiv);
+
+                // --- Placeholder for services and reviews ---
+                // You can now safely build out the rest of the profile here
+                // by creating elements and setting their textContent.
+                const servicesSection = document.createElement('div');
+                servicesSection.innerHTML = `
+                    <div class="profile-section">
+                        <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+                            <h2>Services Offered</h2>
+                        </div>
+                        <p><em>Services will be displayed here.</em></p>
+                    </div>
+                    <div class="profile-section">
+                        <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+                            <h2>Customer Reviews</h2>
+                        </div>
+                        <p><em>Reviews will be displayed here.</em></p>
+                    </div>
+                `;
+                profileContainer.appendChild(servicesSection);
+            } catch (error) {
+                profileContainer.innerHTML = `<p>Error loading profile: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

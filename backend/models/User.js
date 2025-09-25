@@ -16,11 +16,15 @@ const UserSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: false, // Optional for customers, but provided for professionals
+    required: function() { return this.role === 'professional'; } // Required only if the user is a professional
+  },
+  location: {
+    type: String, // Storing pincode as a string
+    required: function() { return this.role === 'professional'; }
   },
   role: {
     type: String,
-    enum: ['customer', 'professional'],
+    enum: ['customer', 'professional', 'admin'],
     default: 'customer'
   },
 }, {
