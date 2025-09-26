@@ -6,6 +6,7 @@
     <title>Book a Service - ServiceBazaar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="images/SB_Logo.png">
 </head>
 <body>
 
@@ -37,6 +38,11 @@
             <div class="input-group">
                 <textarea id="address" rows="3" placeholder="Full Address" required class="input-group"></textarea>
                 <span class="icon"><i class="fa-solid fa-map-location-dot"></i></span>
+            </div>
+
+            <div class="input-group">
+                <input type="tel" id="customerPhone" placeholder="10-Digit Phone Number" required pattern="[0-9]{10}" maxlength="10" title="Please enter a valid 10-digit phone number.">
+                <span class="icon"><i class="fa-solid fa-phone"></i></span>
             </div>
 
             <!-- Payment Method Selection -->

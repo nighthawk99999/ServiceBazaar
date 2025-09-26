@@ -28,25 +28,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (professionalForm) {
             initProfessionalLoginPage(professionalForm);
         }
-        const bookingsContainer = document.getElementById("bookingsContainer");
-        if (bookingsContainer && window.location.pathname.includes('mybookings.html')) {
-            initMyBookingsPage(bookingsContainer); // Only run on the customer's "My Bookings" page
-        }
         const jobsContainer = document.getElementById("jobsContainer");
         if (jobsContainer && window.location.pathname.includes('professional_dashboard.html')) {
             initProfessionalDashboardPage(jobsContainer);
         }
-        const servicesContainer = document.getElementById("servicesContainer");
-        if (servicesContainer) {
+        
+        // --- Refactored Page Initializers for Clarity and Correctness ---
+
+        const servicesContainer = document.getElementById("servicesContainer"); 
+        if (servicesContainer && window.location.pathname.includes('services.html')) {
             initServicesPage(servicesContainer);
         }
+
         const bookingForm = document.getElementById("bookingForm");
         if (bookingForm) {
             initBookingPage(bookingForm);
         }
-        const ratingForm = document.getElementById("ratingForm");
-        if (ratingForm) {
-            initRatingModal(ratingForm);
+
+        const bookingsContainer = document.getElementById("bookingsContainer");
+        if (bookingsContainer && window.location.pathname.includes('mybookings.html')) {
+            initMyBookingsPage(bookingsContainer);
+            initRatingModal(document.getElementById('ratingForm')); // Initialize the modal functionality
         }
     }
 
@@ -296,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 bookingDate: bookingDateInput.value,
                 bookingTime: bookingTimeSelect.value,
                 address: document.getElementById('address').value,
+                phone: document.getElementById('customerPhone').value,
                 description: document.getElementById('description').value,
                 paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value
             };
@@ -332,145 +335,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- MY BOOKINGS PAGE SCRIPT ---
-    async function initMyBookingsPage(container) {
+    function initMyBookingsPage(container) {
         const token = localStorage.getItem('token');
         const notificationsContainer = document.getElementById('notificationsContainer');
-
+    
         // If user is not logged in, redirect to login page
         if (!token) {
             window.location.href = 'login.html';
             return;
         }
 
-        try {
-            const res = await fetch(`${API_URL}/api/bookings`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-auth-token': token // Send the authentication token
-                }
-            });
-
-            if (res.status === 401) { // Handle unauthorized access first
-                localStorage.removeItem('token');
-                localStorage.removeItem('customerName');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            if (!res.ok) {
-                throw new Error('Failed to fetch bookings');
-            }
-
-            const bookings = await res.json();
-
-            notificationsContainer.innerHTML = '';
-            container.innerHTML = '';
-            if (bookings.length === 0) {
-                container.innerHTML = '<p>You have no bookings yet.</p>';
-                return;
-            }
-
-            // Separate newly accepted bookings for notification
-            const acceptedNotifications = bookings.filter(b => b.status === 'accepted' && !sessionStorage.getItem(`notified_${b._id}`));
-
-            if (acceptedNotifications.length > 0) {
-                acceptedNotifications.forEach(booking => {
-                    const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-                    const notificationCard = document.createElement('div');
-                    notificationCard.className = 'notification-card';
-
-                    // Safely get the service name, handling cases where the service might be deleted.
-                    const serviceName = booking.service_id ? booking.service_id.service_name : 'a deleted service';
-
-                    // Safely generate professional info, handling cases where the professional might be deleted.
-                    let professionalInfoHTML = '<p><strong>Professional:</strong> Information not available.</p>';
-                    if (booking.professional_id) {
-                        professionalInfoHTML = `<p>
-                            <strong>Professional:</strong> ${booking.professional_id.name} <br>
-                            <strong>Contact Number:</strong> <a href="tel:${booking.professional_id.phone}">${booking.professional_id.phone || 'Not provided'}</a>
-                        </p>`;
-                    }
-
-                    notificationCard.innerHTML = `
-                        <div class="notification-header">
-                            <i class="fa-solid fa-bell"></i>
-                            <h3>Your Booking has been Accepted!</h3>
-                        </div>
-                        <p>Your service for <strong>${serviceName}</strong> scheduled on <strong>${scheduleDate}</strong> has been confirmed by the professional.</p>
-                        ${professionalInfoHTML}
-                    `;
-                    notificationsContainer.appendChild(notificationCard);
-
-                    // Use sessionStorage to mark as notified for this session only
-                    // The notification will reappear on the next login/visit.
-                    sessionStorage.setItem(`notified_${booking._id}`, 'true');
-                });
-            }
-
-            bookings.forEach(booking => {
-                const bookingCard = document.createElement('div');
-                bookingCard.className = 'booking-card';
-
-                const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-                const isProfessionalView = localStorage.getItem('isProfessional') === 'true';
-
-                // Add a "Rate Service" button for completed jobs for customers
-                let actionButton = '';
-                if (!isProfessionalView && booking.status === 'completed' && !booking.is_rated) {
-                    actionButton = `<button class="btn btn-accent rate-btn" data-booking-id="${booking._id}" style="margin-top: 1rem;">Rate Service</button>`;
-                }
-
-                // Conditionally show the other party's information
-                let relevantPartyInfo;
-                if (isProfessionalView) {
-                    relevantPartyInfo = `<p><strong>Customer:</strong> ${booking.user_id.name} (${booking.user_id.email})</p>`;
-                } else {
-                    // For customer view, show more details for accepted/completed jobs
-                    if (booking.professional_id) {
-                        if (['accepted', 'completed'].includes(booking.status)) {
-                            relevantPartyInfo = `<p><strong>Professional:</strong> ${booking.professional_id.name}<br><strong>Contact:</strong> <a href="tel:${booking.professional_id.phone}">${booking.professional_id.phone || 'Not provided'}</a></p>`;
-                        } else {
-                            relevantPartyInfo = `<p><strong>Professional:</strong> ${booking.professional_id.name}</p>`;
-                        }
-                    } else {
-                        relevantPartyInfo = `<p><strong>Professional:</strong> N/A</p>`;
-                    }
-                }
-                
-                // Display if the service has been rated
-                const ratedInfo = !isProfessionalView && booking.is_rated
-                    ? `<p style="color: var(--primary-color); font-style: italic; margin-top: 1rem;"><i class="fa-solid fa-star"></i> You have rated this service.</p>`
-                    : '';
-                
-                // Display Payment Method
-                const paymentMethodHTML = booking.paymentMethod 
-                    ? `<p><strong>Payment Method:</strong> <span style="text-transform: capitalize; font-weight: bold;">${booking.paymentMethod === 'cod' ? 'Cash on Delivery' : booking.paymentMethod}</span></p>`
-                    : '';
-
-                // Safely get service name for the main card
-                const serviceNameForCard = booking.service_id ? booking.service_id.service_name : 'Deleted Service';
-
-                bookingCard.innerHTML = `
-                    <h3>${serviceNameForCard}</h3>
-                    <p><strong>Status:</strong> <span class="status-${booking.status}">${booking.status}</span></p>
-                    <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
-                    ${paymentMethodHTML}
-                    ${relevantPartyInfo}
-                    ${actionButton}
-                    ${ratedInfo}
-                `;
-                container.appendChild(bookingCard);
-            });
-
-        } catch (error) {
-            console.error('Error fetching bookings:', error);
-            container.innerHTML = '<p>Could not load your bookings. Please try again later.</p>';
-        }
-
-        // Event delegation for "Rate Service" button
+        // Attach the event listener for rating immediately and only once.
         container.addEventListener('click', (e) => {
             if (e.target.classList.contains('rate-btn')) {
+                e.stopPropagation(); // Stop the click from bubbling up to the window
                 const bookingId = e.target.dataset.bookingId;
                 const ratingModal = document.getElementById('ratingModal');
                 const ratingBookingIdInput = document.getElementById('ratingBookingId');
@@ -479,12 +357,140 @@ document.addEventListener('DOMContentLoaded', () => {
                 ratingModal.style.display = 'block';
             }
         });
+
+        // Define the async function to fetch and render data
+        const fetchAndRenderBookings = async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/bookings`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-auth-token': token
+                    }
+                });
+    
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('customerName');
+                    window.location.href = 'login.html';
+                    return;
+                }
+    
+                if (!res.ok) throw new Error('Failed to fetch bookings');
+    
+                const bookings = await res.json();
+    
+                notificationsContainer.innerHTML = '';
+                container.innerHTML = '';
+                if (bookings.length === 0) {
+                    container.innerHTML = '<p>You have no bookings yet.</p>';
+                    return;
+                }
+    
+                const acceptedNotifications = bookings.filter(b => b.status === 'accepted' && !sessionStorage.getItem(`notified_${b._id}`));
+    
+                if (acceptedNotifications.length > 0) {
+                    acceptedNotifications.forEach(booking => {
+                        const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+                        const notificationCard = document.createElement('div');
+                        notificationCard.className = 'notification-card';
+                        const serviceName = booking.service_id ? booking.service_id.service_name : 'a deleted service';
+                        let professionalInfoHTML = '<p><strong>Professional:</strong> Information not available.</p>';
+                        if (booking.professional_id) {
+                            professionalInfoHTML = `<p>
+                                <strong>Professional:</strong> ${booking.professional_id.name} <br>
+                                <strong>Contact Number:</strong> <a href="tel:${booking.professional_id.phone}">${booking.professional_id.phone || 'Not provided'}</a>
+                            </p>`;
+                        }
+                        notificationCard.innerHTML = `
+                            <div class="notification-header">
+                                <i class="fa-solid fa-bell"></i>
+                                <h3>Your Booking has been Accepted!</h3>
+                            </div>
+                            <p>Your service for <strong>${serviceName}</strong> scheduled on <strong>${scheduleDate}</strong> has been confirmed by the professional.</p>
+                            ${professionalInfoHTML}
+                        `;
+                        notificationsContainer.appendChild(notificationCard);
+                        sessionStorage.setItem(`notified_${booking._id}`, 'true');
+                    });
+                }
+    
+                bookings.forEach(booking => {
+                    const bookingCard = document.createElement('div');
+                    bookingCard.className = 'booking-card';
+    
+                    const scheduleDate = new Date(booking.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+                    const isProfessionalView = localStorage.getItem('isProfessional') === 'true';
+    
+                    let actionButton = '';
+                    if (!isProfessionalView && booking.status === 'completed' && !booking.is_rated) {
+                        actionButton = `<button class="btn btn-accent rate-btn" data-booking-id="${booking._id}" style="margin-top: 1rem;">Rate Service</button>`;
+                    }
+    
+                    let relevantPartyInfo;
+                    if (isProfessionalView) {
+                        relevantPartyInfo = `<p><strong>Customer:</strong> ${booking.user_id.name} (${booking.user_id.email})</p>`;
+                    } else {
+                        if (booking.professional_id) {
+                            if (['accepted', 'completed'].includes(booking.status)) {
+                                relevantPartyInfo = `<p><strong>Professional:</strong> ${booking.professional_id.name}<br><strong>Contact:</strong> <a href="tel:${booking.professional_id.phone}">${booking.professional_id.phone || 'Not provided'}</a></p>`;
+                            } else {
+                                relevantPartyInfo = `<p><strong>Professional:</strong> ${booking.professional_id.name}</p>`;
+                            }
+                        } else {
+                            relevantPartyInfo = `<p><strong>Professional:</strong> N/A</p>`;
+                        }
+                    }
+                    
+                    const ratedInfo = !isProfessionalView && booking.is_rated
+                        ? `<p style="color: var(--primary-color); font-style: italic; margin-top: 1rem;"><i class="fa-solid fa-star"></i> You have rated this service.</p>`
+                        : '';
+                    
+                    const paymentMethodHTML = booking.paymentMethod 
+                        ? `<p><strong>Payment Method:</strong> <span style="text-transform: capitalize; font-weight: bold;">${booking.paymentMethod === 'cod' ? 'Cash on Delivery' : booking.paymentMethod}</span></p>`
+                        : '';
+    
+                    const serviceNameForCard = booking.service_id ? booking.service_id.service_name : 'Deleted Service';
+    
+                    bookingCard.innerHTML = `
+                        <h3>${serviceNameForCard}</h3>
+                        <p><strong>Status:</strong> <span class="status-${booking.status}">${booking.status}</span></p>
+                        <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
+                        ${paymentMethodHTML}
+                        ${relevantPartyInfo}
+                        ${actionButton}
+                        ${ratedInfo}
+                    `;
+                    container.appendChild(bookingCard);
+                });
+            } catch (error) {
+                console.error('Error fetching bookings:', error);
+                container.innerHTML = '<p>Could not load your bookings. Please try again later.</p>';
+            }
+        };
+
+        fetchAndRenderBookings(); // Call the function to start the process
     }
 
     // --- RATING MODAL SCRIPT ---
     function initRatingModal(ratingForm) {
+        if (!ratingForm) return; // Guard clause in case the form isn't on the page
+
         const stars = ratingForm.querySelectorAll('.star-rating');
         const ratingValueInput = document.getElementById('ratingValue');
+        const ratingModal = document.getElementById('ratingModal');
+        const closeModalBtn = document.getElementById('closeRatingModal');
+
+        // --- Add the modal closing logic here ---
+        if (closeModalBtn) {
+            closeModalBtn.onclick = () => ratingModal.style.display = 'none';
+        }
+        // Use 'mousedown' to prevent conflicts with other click events
+        window.addEventListener('mousedown', (event) => {
+            if (event.target === ratingModal) {
+                ratingModal.style.display = 'none';
+            }
+        });
 
         stars.forEach(star => {
             star.addEventListener('mouseover', () => {
@@ -570,13 +576,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const scheduleDate = new Date(job.schedule).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
 
-                // Conditionally add action buttons if the status is 'pending'
-                const actionButtons = job.status === 'pending' ? `
-                    <div class="booking-actions">
-                        <button class="btn btn-primary btn-accept">Accept</button>
-                        <button class="btn btn-accent btn-reject">Reject</button>
-                    </div>
-                ` : '';
+                // Conditionally add action buttons based on status
+                let actionButtons = '';
+                if (job.status === 'pending') {
+                    actionButtons = `
+                        <div class="booking-actions">
+                            <button class="btn btn-primary btn-accept">Accept</button>
+                            <button class="btn btn-accent btn-reject">Reject</button>
+                        </div>`;
+                } else if (job.status === 'accepted') {
+                    actionButtons = `
+                        <div class="booking-actions">
+                            <button class="btn btn-primary btn-complete">Confirm Payment & Complete</button>
+                        </div>`;
+                }
+
+                // Conditionally display customer contact info based on job status
+                const customerContactInfo = (job.status === 'accepted' || job.status === 'completed') && job.customerPhone
+                    ? `<p><strong>Customer Contact:</strong> <a href="tel:${job.customerPhone}">${job.customerPhone}</a></p>`
+                    : '';
 
                 // Display Payment Method for professional
                 const paymentMethodHTML = job.paymentMethod 
@@ -589,6 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>Customer:</strong> ${job.user_id.name} (${job.user_id.email})</p>
                     <p><strong>Scheduled for:</strong> ${scheduleDate}</p>
                     ${paymentMethodHTML}
+                    ${customerContactInfo}
                     <p><strong>Customer Address:</strong> ${job.address}</p>
                     <p><strong>Job Details:</strong> ${job.description}</p>
                     ${actionButtons}
@@ -607,9 +626,10 @@ document.addEventListener('DOMContentLoaded', () => {
             let newStatus = null;
 
             if (target.classList.contains('btn-accept')) newStatus = 'accepted';
-            else if (target.classList.contains('btn-reject')) newStatus = 'rejected';
+            if (target.classList.contains('btn-reject')) newStatus = 'rejected';
 
             if (newStatus) {
+                // This block handles 'accept' and 'reject'
                 try {
                     const res = await fetch(`${API_URL}/api/bookings/${jobId}/status`, {
                         method: 'PATCH',
@@ -621,6 +641,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (error) {
                     console.error('Error updating job status:', error);
                     alert('Could not update the job status. Please try again.');
+                }
+            }
+
+            if (target.classList.contains('btn-complete')) {
+                // This block handles 'complete'
+                try {
+                    const res = await fetch(`${API_URL}/api/bookings/${jobId}/complete`, {
+                        method: 'PATCH',
+                        headers: { 'x-auth-token': token, 'Content-Type': 'application/json' }
+                    });
+                    if (!res.ok) throw new Error('Failed to mark job as complete.');
+                    fetchAndRenderJobs(); // Refresh the list of jobs
+                } catch (error) {
+                    console.error('Error completing job:', error);
+                    alert('Could not complete the job. Please try again.');
                 }
             }
         });

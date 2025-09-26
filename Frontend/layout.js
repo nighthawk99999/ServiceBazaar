@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (userProfile) userProfile.style.display = 'flex';
             if (isProfessional) {
                 if (professionalDashboardLink) professionalDashboardLink.style.display = 'inline';
+                if (myBookingsLink) myBookingsLink.style.display = 'none'; // Hide for professionals
             } else {
                 if (myBookingsLink) myBookingsLink.style.display = 'inline';
             }

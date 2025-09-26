@@ -6,6 +6,7 @@
     <title>My Bookings - ServiceBazaar</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/SB_Logo.png">
 </head>
 <body>
 
@@ -59,16 +60,5 @@
     <script src="layout.js"></script>
     <script src="config.js"></script>
     <script src="script.js"></script>
-    <script>
-        // This inline script is for modal-specific logic that doesn't need to be in the main script.js
-        document.addEventListener('DOMContentLoaded', () => {
-            const ratingModal = document.getElementById('ratingModal');
-            const closeModalBtn = document.getElementById('closeRatingModal');
-            if (closeModalBtn) closeModalBtn.onclick = () => ratingModal.style.display = 'none';
-            window.onclick = (event) => {
-                if (event.target == ratingModal) ratingModal.style.display = 'none';
-            };
-        });
-    </script>
 </body>
 </html>

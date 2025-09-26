@@ -307,6 +307,66 @@ app.patch('/api/bookings/:id/status', auth, async (req, res) => {
   }
 });
 
+// Mark a booking as complete (by professional after receiving payment)
+app.patch('/api/bookings/:id/complete', auth, async (req, res) => {
+  try {
+    // 1. Find the booking by its ID
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+
+    // 2. Ensure the logged-in user is the correct professional for this booking
+    if (booking.professional_id.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'You are not authorized to update this booking.' });
+    }
+
+    // 3. Ensure the booking has been 'accepted' before it can be 'completed'
+    if (booking.status !== 'accepted') {
+      return res.status(400).json({ error: `Cannot complete a job with status: ${booking.status}.` });
+    }
+
+    // 4. Update the status to 'completed' and save
+    booking.status = 'completed';
+    await booking.save();
+
+    res.json(booking);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+// Mark a booking as complete (by professional after receiving payment)
+app.patch('/api/bookings/:id/complete', auth, async (req, res) => {
+  try {
+    // 1. Find the booking by its ID
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+
+    // 2. Ensure the logged-in user is the correct professional for this booking
+    if (booking.professional_id.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'You are not authorized to update this booking.' });
+    }
+
+    // 3. Ensure the booking has been 'accepted' before it can be 'completed'
+    if (booking.status !== 'accepted') {
+      return res.status(400).json({ error: `Cannot complete a job with status: ${booking.status}.` });
+    }
+
+    // 4. Update the status to 'completed' and save
+    booking.status = 'completed';
+    await booking.save();
+
+    res.json(booking);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
 // Create a new booking
 app.post('/api/bookings', auth, async (req, res) => {
   try {
@@ -315,13 +375,18 @@ app.post('/api/bookings', auth, async (req, res) => {
       return res.status(403).json({ error: 'Professionals are not allowed to book services.' });
     }
 
-    const { serviceId, bookingDate, bookingTime, address, description, paymentMethod } = req.body;
+    const { serviceId, bookingDate, bookingTime, address, phone, description, paymentMethod } = req.body;
 
-    // --- VALIDATION: Check if booking time is in the past ---
+    // --- VALIDATION ---
+    if (!phone || !/^\d{10}$/.test(phone)) {
+      return res.status(400).json({ error: 'A valid 10-digit phone number is required.' });
+    }
+
     const bookingDateTime = new Date(`${bookingDate}T${bookingTime}`);
     if (isNaN(bookingDateTime.getTime())) {
       return res.status(400).json({ error: 'Invalid date or time format provided.' });
     }
+    // Check if booking time is in the past
     if (bookingDateTime < new Date()) {
       return res.status(400).json({ error: 'Booking date and time cannot be in the past.' });
     }
@@ -336,6 +401,7 @@ app.post('/api/bookings', auth, async (req, res) => {
       service_id: service._id,
       professional_id: service.professional_id,
       schedule: bookingDateTime, // Use the validated date object
+      customerPhone: phone,
       address,
       description,
       status: 'pending',
@@ -399,10 +465,20 @@ app.get('/api/bookings', auth, async (req, res) => {
       .populate('user_id', 'name email')
       .populate('professional_id', 'name phone')
       .sort({ schedule: -1 });
-
+    
     // Filter out bookings where the professional or service has been deleted
     bookings = bookings.filter(booking => booking.professional_id && booking.service_id);
 
+    // If the user is a professional, conditionally hide customer phone number on pending jobs
+    if (isProfessional) {
+      bookings = bookings.map(booking => {
+        const bookingObject = booking.toObject(); // Convert Mongoose doc to plain object to modify it
+        if (bookingObject.status === 'pending') {
+          delete bookingObject.customerPhone;
+        }
+        return bookingObject;
+      });
+    }
     res.json(bookings);
   } catch (err) {
     console.error(err);
