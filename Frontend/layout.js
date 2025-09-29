@@ -1,8 +1,19 @@
 document.addEventListener("DOMContentLoaded", function() {
     // --- GLOBAL CONFIGURATION ---
-    // Read the API_URL from the script tag's data attribute. This is a robust way to pass env vars.
-    const layoutScript = document.querySelector('script[src="layout.js"]');
-    window.API_URL = layoutScript ? layoutScript.dataset.apiUrl : 'http://localhost:5000'; // Fallback for local dev
+    // Dynamically set the API_URL based on the hostname.
+    // This allows the same frontend code to work for both local development and production.
+    const getApiUrl = () => {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // We are in a local development environment.
+            return 'http://localhost:5000';
+        } else {
+            // We are in a production environment (e.g., on Render).
+            // Replace this with your actual backend URL on Render.
+            return 'https://servicebazaar-backend.onrender.com'; 
+        }
+    };
+    window.API_URL = getApiUrl();
 
     window.SERVICE_CATEGORIES = [
         "Plumbing", "Electrical", "Masonry", "Carpentry", "Painting",

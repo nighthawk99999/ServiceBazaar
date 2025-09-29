@@ -47,13 +47,12 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
     }
 
-    const exists = await User.findOne({ email });
-    if (exists) {
-      const isProfessional = await Professional.findById(exists._id);
-      if (isProfessional) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      if (existingUser.role === 'professional') {
         return res.status(400).json({ error: 'This email is registered as a Professional. Please use a different email.' });
       }
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: 'This email is already registered as a customer.' });
     }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -463,11 +462,17 @@ app.get('/api/professionals/:id', async (req, res) => {
       return res.status(404).json({ msg: 'Professional not found.' });
     }
 
-    // Optionally, you could also fetch and attach their services and reviews here
-    // const services = await Service.find({ professional_id: req.params.id });
-    // const reviews = await Review.find({ professional_id: req.params.id });
+    // Fetch the professional's services and reviews
+    const services = await Service.find({ professional_id: req.params.id });
+    const reviews = await Review.find({ professional_id: req.params.id })
+      .populate('user_id', 'name') // Get the name of the user who left the review
+      .sort({ createdAt: -1 }); // Show newest reviews first
 
-    res.json(professional);
+    res.json({
+      ...professional.toObject(), // Convert mongoose doc to plain object
+      services,
+      reviews
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -495,6 +500,61 @@ app.get('/api/reviews/service/:serviceId', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+// Create a new review for a booking
+app.post('/api/reviews', auth, async (req, res) => {
+  try {
+    const { bookingId, rating, reviewText } = req.body;
+
+    // 1. Validate input
+    if (!bookingId || !rating) {
+      return res.status(400).json({ msg: 'Booking ID and rating are required.' });
+    }
+    const numericRating = Number(rating);
+    if (isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
+      return res.status(400).json({ msg: 'Rating must be a number between 1 and 5.' });
+    }
+
+    // 2. Find the booking and perform checks
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ msg: 'Booking not found.' });
+    }
+    // Ensure the person leaving the review is the one who made the booking
+    if (booking.user_id.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'You are not authorized to review this booking.' });
+    }
+    // Ensure the booking is completed
+    if (booking.status !== 'completed') {
+      return res.status(400).json({ msg: 'You can only review completed services.' });
+    }
+    // Prevent duplicate reviews
+    if (booking.is_rated) {
+      return res.status(400).json({ msg: 'This service has already been rated.' });
+    }
+
+    // 3. Create and save the review
+    const newReview = new Review({
+      user_id: req.user.id,
+      professional_id: booking.professional_id,
+      service_id: booking.service_id,
+      booking_id: bookingId,
+      rating: numericRating,
+      comment: reviewText
+    });
+    await newReview.save();
+
+    // 4. Mark the booking as rated and save
+    booking.is_rated = true;
+    await booking.save();
+
+    res.status(201).json(newReview);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // Get all bookings for the authenticated user (customer or professional)
 app.get('/api/bookings', auth, async (req, res) => {
   try {
@@ -535,6 +595,11 @@ app.get('/api/bookings', auth, async (req, res) => {
 // ... (The rest of your file should be here)
 // Make sure all your other routes like /api/services are included below this line.
 // I have omitted them for brevity but they are necessary for your app to function.
+
+if (!process.env.MONGO_URI) {
+  console.error('FATAL ERROR: MONGO_URI is not defined in the environment variables.');
+  process.exit(1);
+}
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
