@@ -736,18 +736,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                const data = await res.json();
 
                 if (res.ok) {
+                    const data = await res.json();
                     // Save token and name, then redirect
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('isProfessional', 'false'); // Explicitly set role
                     localStorage.setItem('customerName', data.name || email);
                     window.location.href = 'index.html';
-                } else if (res.status === 403) {
-                    alert('This is a professional account. Please use the Partner Login page.');
                 } else {
-                    alert(data.error || 'Invalid credentials. Please try again.');
+                    // Only parse JSON on failure, as the backend sends an error object.
+                    const errorData = await res.json();
+                    alert(errorData.error || 'Invalid credentials. Please try again.');
                 }
             } else {
                 // Customer Registration
@@ -869,17 +869,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                const data = await res.json();
 
                 if (res.ok) {
+                    const data = await res.json();
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('isProfessional', 'true'); // Set role to professional
                     localStorage.setItem('customerName', data.name || email);
                     window.location.href = 'index.html';
-                } else if (res.status === 403) {
-                    alert('This is a customer account. Please use the Customer Login page.');
                 } else {
-                    alert(data.error || 'Invalid credentials. Please try again.');
+                    const errorData = await res.json();
+                    alert(errorData.error || 'Invalid credentials. Please try again.');
                 }
             } else {
                 // Professional Registration
