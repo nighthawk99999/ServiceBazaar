@@ -1,10 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const SERVICE_CATEGORIES = [
-        "Plumbing", "Electrical", "Masonry", "Carpentry", "Painting",
-        "Cleaning", "Gardening", "Appliance Repair", "Pest Control", "Home Tutoring"
-    ];
-
     // --- INITIALIZER ---
     function initPage() {
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
