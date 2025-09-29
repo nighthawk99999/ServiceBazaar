@@ -439,6 +439,25 @@ app.get('/api/services', async (req, res) => {
   }
 });
 
+// Get a single professional's public profile
+app.get('/api/professionals/:id', async (req, res) => {
+  try {
+    const professional = await User.findOne({ _id: req.params.id, role: 'professional' }).select('-password');
+
+    if (!professional) {
+      return res.status(404).json({ msg: 'Professional not found.' });
+    }
+
+    // Optionally, you could also fetch and attach their services and reviews here
+    // const services = await Service.find({ professional_id: req.params.id });
+    // const reviews = await Review.find({ professional_id: req.params.id });
+
+    res.json(professional);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 // Get all bookings for the authenticated user (customer or professional)
 app.get('/api/bookings', auth, async (req, res) => {
   try {
