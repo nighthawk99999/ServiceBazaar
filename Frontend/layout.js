@@ -1,4 +1,14 @@
 document.addEventListener("DOMContentLoaded", function() {
+    // --- GLOBAL CONFIGURATION ---
+    // Read the API_URL from the script tag's data attribute. This is a robust way to pass env vars.
+    const layoutScript = document.querySelector('script[src="layout.js"]');
+    window.API_URL = layoutScript ? layoutScript.dataset.apiUrl : 'http://localhost:5000'; // Fallback for local dev
+
+    window.SERVICE_CATEGORIES = [
+        "Plumbing", "Electrical", "Masonry", "Carpentry", "Painting",
+        "Cleaning", "Gardening", "Appliance Repair", "Pest Control", "Home Tutoring"
+    ];
+
     // Function to fetch and insert HTML content
     const loadComponent = (selector, url, callback) => {
         fetch(url)

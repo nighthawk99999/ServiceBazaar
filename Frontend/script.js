@@ -1,10 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
-    const SERVICE_CATEGORIES = [
-        "Plumbing", "Electrical", "Masonry", "Carpentry", "Painting",
-        "Cleaning", "Gardening", "Appliance Repair", "Pest Control", "Home Tutoring"
-    ];
-
     // --- INITIALIZER ---
     function initPage() {
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -366,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Define the async function to fetch and render data
         const fetchAndRenderBookings = async () => {
             try {
-                const res = await fetch(`${API_URL}/api/bookings`, {
+                const res = await fetch(`${window.API_URL}/api/bookings`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -525,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // This is a new API endpoint you would need to create on your backend
-                const res = await fetch(`${API_URL}/api/reviews`, {
+                const res = await fetch(`${window.API_URL}/api/reviews`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-auth-token': localStorage.getItem('token') },
                     body: JSON.stringify({ bookingId, rating, reviewText })
@@ -549,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fetchAndRenderJobs = async () => {
             try {
-                const res = await fetch(`${API_URL}/api/bookings`, {
+                const res = await fetch(`${window.API_URL}/api/bookings`, {
                     headers: {
                         'x-auth-token': token,
                         'Content-Type': 'application/json'
@@ -636,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newStatus) {
                 // This block handles 'accept' and 'reject'
                 try {
-                    const res = await fetch(`${API_URL}/api/bookings/${jobId}/status`, {
+                    const res = await fetch(`${window.API_URL}/api/bookings/${jobId}/status`, {
                         method: 'PATCH',
                         headers: { 'x-auth-token': token, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ status: newStatus })
@@ -652,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target.classList.contains('btn-complete')) {
                 // This block handles 'complete'
                 try {
-                    const res = await fetch(`${API_URL}/api/bookings/${jobId}/complete`, {
+                    const res = await fetch(`${window.API_URL}/api/bookings/${jobId}/complete`, {
                         method: 'PATCH',
                         headers: { 'x-auth-token': token, 'Content-Type': 'application/json' }
                     });
@@ -731,7 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = formElement.querySelector('#email').value;
                 const password = formElement.querySelector('#password').value;
 
-                const res = await fetch(`${API_URL}/api/login`, {
+                const res = await fetch(`${window.API_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -755,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const name = formElement.querySelector('#regUsername').value;
                 const email = formElement.querySelector('#regEmail').value;
                 const password = formElement.querySelector('#regPassword').value;
-                const res = await fetch(`${API_URL}/api/register`, {
+                const res = await fetch(`${window.API_URL}/api/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
@@ -802,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 title.innerText = `Join as a Professional`;
                 
-                let servicesHTML = SERVICE_CATEGORIES.map(service => {
+                let servicesHTML = window.SERVICE_CATEGORIES.map(service => {
                     const serviceId = `service-${service.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`;
                     return `
                         <div class="service-tag">
@@ -865,7 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = formElement.querySelector('#email').value;
                 const password = formElement.querySelector('#password').value;
 
-                const res = await fetch(`${API_URL}/api/professional/login`, {
+                const res = await fetch(`${window.API_URL}/api/professional/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -891,7 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const location = formElement.querySelector('#regLocation').value;
                 const selectedServices = Array.from(formElement.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
 
-                const res = await fetch(`${API_URL}/api/professional/register`, {
+                const res = await fetch(`${window.API_URL}/api/professional/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, phone, location, categories: selectedServices })
