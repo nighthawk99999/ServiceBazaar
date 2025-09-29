@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    const SERVICE_CATEGORIES = [
+        "Plumbing", "Electrical", "Masonry", "Carpentry", "Painting",
+        "Cleaning", "Gardening", "Appliance Repair", "Pest Control", "Home Tutoring"
+    ];
+
     // --- INITIALIZER ---
     function initPage() {
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -889,13 +894,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, phone, location, categories: selectedServices })
                 });
-                const data = await res.json();
 
                 if (res.ok) {
+                    const data = await res.json();
                     alert("Professional account created successfully. Your account is under review and will be activated shortly. You can log in once approved.");
                     loginBtn.click(); // Programmatically switch to the login view
                 } else {
-                    alert(data.error || 'Registration failed. Please try again.');
+                    const errorData = await res.json();
+                    alert(errorData.error || 'Registration failed. Please try again.');
                 }
             }
         });
