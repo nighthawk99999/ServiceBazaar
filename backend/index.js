@@ -119,8 +119,13 @@ app.post('/api/professional/register', async (req, res) => {
       return res.status(400).json({ error: 'Please enter a valid 6-digit pincode for the location.' });
     }
 
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ error: 'Email already registered' });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      if (existingUser.role === 'customer') {
+        return res.status(400).json({ error: 'This email is already registered as a customer. Please use a different email.' });
+      }
+      return res.status(400).json({ error: 'This email is already registered as a professional.' });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
