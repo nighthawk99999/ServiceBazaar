@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 serviceSearchInput.value = searchTerm;
             }
             
-            const res = await fetch(`${API_URL}/api/services`);
+            const res = await fetch(`${window.API_URL}/api/services`);
             if (!res.ok) {
                 throw new Error('Failed to fetch services');
             }
