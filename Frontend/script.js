@@ -761,12 +761,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (res.ok) {
-                    const data = await res.json();
+                    // On success, we don't need the response body, just the confirmation.
                     alert("Account created successfully! Please log in.");
                     loginBtn.click(); // Programmatically switch to the login view
                 } else {
-                    const data = await res.json();
-                    alert(data.error || 'Registration failed. Please try again.');
+                    // Only parse JSON if there's an error, as the backend sends an error object.
+                    const errorData = await res.json();
+                    alert(errorData.error || 'Registration failed. Please try again.');
                 }
             }
         });
