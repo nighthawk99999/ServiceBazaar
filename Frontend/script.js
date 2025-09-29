@@ -754,12 +754,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
                 });
-                const data = await res.json();
                 
                 if (res.ok) {
+                    const data = await res.json();
                     alert("Account created successfully! Please log in.");
                     loginBtn.click(); // Programmatically switch to the login view
                 } else {
+                    const data = await res.json();
                     alert(data.error || 'Registration failed. Please try again.');
                 }
             }
