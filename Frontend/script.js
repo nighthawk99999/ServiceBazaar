@@ -737,17 +737,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ email, password })
                 });
 
-                if (res.ok) {
-                    const data = await res.json();
+                const data = await res.json().catch(() => null); // Attempt to parse JSON, return null on failure
+
+                if (res.ok && data) {
                     // Save token and name, then redirect
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('isProfessional', 'false'); // Explicitly set role
                     localStorage.setItem('customerName', data.name || email);
                     window.location.href = 'index.html';
                 } else {
-                    // Only parse JSON on failure, as the backend sends an error object.
-                    const errorData = await res.json();
-                    alert(errorData.error || 'Invalid credentials. Please try again.');
+                    // Use the parsed data if available, otherwise show a generic error
+                    const errorMessage = data ? data.error : 'Login failed. Please check your credentials or try again later.';
+                    alert(errorMessage);
                 }
             } else {
                 // Customer Registration
@@ -759,15 +760,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
                 });
+
+                const data = await res.json().catch(() => null); // Attempt to parse JSON, return null on failure
                 
-                if (res.ok) {
-                    // On success, we don't need the response body, just the confirmation.
+                if (res.ok && data) {
                     alert("Account created successfully! Please log in.");
                     loginBtn.click(); // Programmatically switch to the login view
                 } else {
-                    // Only parse JSON if there's an error, as the backend sends an error object.
-                    const errorData = await res.json();
-                    alert(errorData.error || 'Registration failed. Please try again.');
+                    const errorMessage = data ? data.error : 'Registration failed. Please try again later.';
+                    alert(errorMessage);
                 }
             }
         });
@@ -870,15 +871,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ email, password })
                 });
 
-                if (res.ok) {
-                    const data = await res.json();
+                const data = await res.json().catch(() => null); // Attempt to parse JSON, return null on failure
+
+                if (res.ok && data) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('isProfessional', 'true'); // Set role to professional
                     localStorage.setItem('customerName', data.name || email);
                     window.location.href = 'index.html';
                 } else {
-                    const errorData = await res.json();
-                    alert(errorData.error || 'Invalid credentials. Please try again.');
+                    const errorMessage = data ? data.error : 'Login failed. Please check your credentials or try again later.';
+                    alert(errorMessage);
                 }
             } else {
                 // Professional Registration
@@ -895,13 +897,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ name, email, password, phone, location, categories: selectedServices })
                 });
 
-                if (res.ok) {
-                    const data = await res.json();
+                const data = await res.json().catch(() => null); // Attempt to parse JSON, return null on failure
+
+                if (res.ok && data) {
                     alert("Professional account created successfully. Your account is under review and will be activated shortly. You can log in once approved.");
                     loginBtn.click(); // Programmatically switch to the login view
                 } else {
-                    const errorData = await res.json();
-                    alert(errorData.error || 'Registration failed. Please try again.');
+                    const errorMessage = data ? data.error : 'Registration failed. Please try again later.';
+                    alert(errorMessage);
                 }
             }
         });

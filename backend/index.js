@@ -473,6 +473,28 @@ app.get('/api/professionals/:id', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+// Get all reviews for a specific service
+app.get('/api/reviews/service/:serviceId', async (req, res) => {
+  try {
+    const reviews = await Review.find({ service_id: req.params.serviceId })
+      .populate('user_id', 'name') // Populate user's name
+      .sort({ createdAt: -1 }); // Show newest reviews first
+
+    if (!reviews) {
+      return res.json([]); // Return an empty array if no reviews are found
+    }
+
+    res.json(reviews);
+  } catch (err) {
+    console.error(err.message);
+    // Check for CastError which happens with an invalid ObjectId
+    if (err.name === 'CastError') {
+      return res.status(400).json({ msg: 'Invalid service ID format.' });
+    }
+    res.status(500).send('Server Error');
+  }
+});
 // Get all bookings for the authenticated user (customer or professional)
 app.get('/api/bookings', auth, async (req, res) => {
   try {
