@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const res = await fetch(`${API_URL}/api/bookings`, {
+                const res = await fetch(`${window.API_URL}/api/bookings`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
