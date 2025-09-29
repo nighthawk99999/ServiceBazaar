@@ -24,15 +24,6 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Atlas connection
-mongoose.connect(process.env.MONGO_URI);
-
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
-});
-
 // User registration
 app.post('/api/register', async (req, res) => {
   try {
@@ -489,6 +480,14 @@ app.get('/api/bookings', auth, async (req, res) => {
 // Make sure all your other routes like /api/services are included below this line.
 // I have omitted them for brevity but they are necessary for your app to function.
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('Successfully connected to MongoDB Atlas.');
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Failed to connect to MongoDB:', err);
+    process.exit(1); // Exit the process with an error code
+  });
