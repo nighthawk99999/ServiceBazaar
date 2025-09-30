@@ -10,13 +10,14 @@
 </head>
 <body>
 
-    <header class="navbar"></header>
+    <header class="navbar"><!-- Header will be loaded here --></header>
 
     <main class="container" id="profileContainer">
+        <!-- Profile content will be dynamically inserted here -->
         <p>Loading professional profile...</p>
     </main>
 
-    <footer></footer>
+    <footer><!-- Footer will be loaded here --></footer>
 
     <script src="layout.js"></script>
     <script>
@@ -31,18 +32,20 @@
             }
 
             try {
+                // This is a new API endpoint you would need to create on your backend
                 const res = await fetch(`${window.API_URL}/api/professionals/${professionalId}`);
                 if (!res.ok) throw new Error('Could not fetch profile.');
                 
                 const professional = await res.json();
 
-                profileContainer.innerHTML = ''; 
+                // --- Build the profile safely to prevent XSS ---
+                profileContainer.innerHTML = ''; // Clear loading text
 
                 const headerDiv = document.createElement('div');
                 headerDiv.className = 'section-header';
 
                 const nameH1 = document.createElement('h1');
-                nameH1.textContent = professional.name; 
+                nameH1.textContent = professional.name; // Use textContent for safety
 
                 const memberSinceP = document.createElement('p');
                 memberSinceP.textContent = `Member since ${new Date(professional.createdAt).getFullYear()}`;
@@ -51,41 +54,25 @@
                 headerDiv.appendChild(memberSinceP);
                 profileContainer.appendChild(headerDiv);
 
-                const servicesContainer = document.createElement('div');
-                servicesContainer.className = 'profile-section';
-                let servicesHTML = `<div class="section-header" style="text-align: left; margin-bottom: 2rem;"><h2>Services Offered</h2></div>`;
-                if (professional.services && professional.services.length > 0) {
-                    servicesHTML += '<div class="service-list">';
-                    professional.services.forEach(service => {
-                        servicesHTML += `<div class="service-list-item"><h3>${escapeHTML(service.service_name)}</h3><p>${escapeHTML(service.description)}</p><p class="price">₹${Number(service.price).toLocaleString('en-IN')}</p></div>`;
-                    });
-                    servicesHTML += '</div>';
-                } else {
-                    servicesHTML += '<p>This professional has not listed any services yet.</p>';
-                }
-                servicesContainer.innerHTML = servicesHTML;
-                profileContainer.appendChild(servicesContainer);
-
-                const reviewsContainer = document.createElement('div');
-                reviewsContainer.className = 'profile-section';
-                let reviewsHTML = `<div class="section-header" style="text-align: left; margin-bottom: 2rem;"><h2>Customer Reviews</h2></div>`;
-                if (professional.reviews && professional.reviews.length > 0) {
-                    reviewsHTML += '<div class="review-list">';
-                    professional.reviews.forEach(review => {
-                        reviewsHTML += `<div class="review-card"><div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div><p class="review-comment">"${escapeHTML(review.comment)}"</p><p class="review-author">- ${escapeHTML(review.user_id.name)} on ${new Date(review.createdAt).toLocaleDateString()}</p></div>`;
-                    });
-                    reviewsHTML += '</div>';
-                } else {
-                    reviewsHTML += '<p>This professional has no reviews yet.</p>';
-                }
-                reviewsContainer.innerHTML = reviewsHTML;
-                profileContainer.appendChild(reviewsContainer);
-
-                function escapeHTML(str) {
-                    const p = document.createElement('p');
-                    p.textContent = str;
-                    return p.innerHTML;
-                }
+                // --- Placeholder for services and reviews ---
+                // You can now safely build out the rest of the profile here
+                // by creating elements and setting their textContent.
+                const servicesSection = document.createElement('div');
+                servicesSection.innerHTML = `
+                    <div class="profile-section">
+                        <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+                            <h2>Services Offered</h2>
+                        </div>
+                        <p><em>Services will be displayed here.</em></p>
+                    </div>
+                    <div class="profile-section">
+                        <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+                            <h2>Customer Reviews</h2>
+                        </div>
+                        <p><em>Reviews will be displayed here.</em></p>
+                    </div>
+                `;
+                profileContainer.appendChild(servicesSection);
             } catch (error) {
                 profileContainer.innerHTML = `<p>Error loading profile: ${error.message}</p>`;
             }

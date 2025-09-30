@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const PaymentSchema = new mongoose.Schema({
-  booking_id: {
+  booking_id: { // FK to Booking
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
     required: true,

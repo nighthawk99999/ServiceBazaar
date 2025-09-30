@@ -16,10 +16,10 @@ const UserSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: function() { return this.role === 'professional'; }
+    required: function() { return this.role === 'professional'; } // Required only if the user is a professional
   },
   location: {
-    type: String,
+    type: String, // Storing pincode as a string
     required: function() { return this.role === 'professional'; }
   },
   role: {
@@ -27,7 +27,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['customer', 'professional', 'admin'],
     default: 'customer'
   },
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  // Use a different name for the schema object if you're also defining a variable named UserSchema
+});
 
 const User = mongoose.model('User', UserSchema);
 

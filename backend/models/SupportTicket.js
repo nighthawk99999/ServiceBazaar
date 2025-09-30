@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const SupportTicketSchema = new mongoose.Schema({
-  user_id: {
+  user_id: { // FK to User
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,

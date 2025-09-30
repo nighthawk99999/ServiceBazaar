@@ -10,7 +10,7 @@
 </head>
 <body>
 
-    <header class="navbar"></header>
+    <header class="navbar"><!-- Header will be loaded here --></header>
 
     <main class="container">
         <section class="bookings-section">
@@ -18,14 +18,21 @@
                 <h2>My Bookings</h2>
                 <p>Here is a list of your scheduled and past services.</p>
             </div>
+            <!-- Container for new booking acceptance notifications -->
+            <div id="notificationsContainer" class="notifications-grid">
+                <!-- New notifications will be dynamically inserted here -->
+            </div>
+
             <div id="bookingsContainer" class="bookings-grid">
+                <!-- Bookings will be dynamically inserted here by script.js -->
                 <p>Loading your bookings...</p>
             </div> 
         </section>
     </main>
 
-    <footer></footer>
+    <footer><!-- Footer will be loaded here --></footer>
 
+    <!-- Rating Modal -->
     <div id="ratingModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeRatingModal">&times;</span>

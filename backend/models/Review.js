@@ -1,26 +1,16 @@
 import mongoose from 'mongoose';
 
 const ReviewSchema = new mongoose.Schema({
-  user_id: {
+  user_id: { // FK to User
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  professional_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  service_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Service',
-    required: true,
-  },
-  booking_id: {
+  booking_id: { // FK to Booking
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
     required: true,
-    unique: true,
+    unique: true, // A booking can have at most one review
   },
   rating: {
     type: Number,
