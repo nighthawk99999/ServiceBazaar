@@ -13,7 +13,7 @@ const bookingSchema = new mongoose.Schema({
   },
   professional_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Referencing the User model, as professionals are also users
+    ref: 'User',
     required: true,
   },
   schedule: { type: Date, required: true },
@@ -21,13 +21,17 @@ const bookingSchema = new mongoose.Schema({
   description: { type: String, required: true },
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'rejected', 'completed', 'cancelled'], // Added 'accepted' and 'rejected'
+    enum: ['pending', 'accepted', 'rejected', 'completed', 'cancelled'],
     default: 'pending',
   },
   paymentMethod: {
     type: String,
     enum: ['cod', 'online'],
     default: 'cod'
+  },
+  is_rated: {
+    type: Boolean,
+    default: false
   },
 }, { timestamps: true });
 

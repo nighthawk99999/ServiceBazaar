@@ -1,16 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // --- GLOBAL CONFIGURATION ---
-    // Dynamically set the API_URL based on the hostname.
-    // This allows the same frontend code to work for both local development and production.
     const getApiUrl = () => {
         const hostname = window.location.hostname;
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            // We are in a local development environment.
             return 'http://localhost:5000';
         } else {
-            // We are in a production environment (e.g., on Render).
-            // Replace this with your actual backend URL on Render.
-            return 'https://servicebazaar-backend.onrender.com'; 
+            return 'https://servicebazaar-backend.onrender.com';
         }
     };
     window.API_URL = getApiUrl();
@@ -20,7 +14,6 @@ document.addEventListener("DOMContentLoaded", function() {
         "Cleaning", "Gardening", "Appliance Repair", "Pest Control", "Home Tutoring"
     ];
 
-    // Function to fetch and insert HTML content
     const loadComponent = (selector, url, callback) => {
         fetch(url)
             .then(response => {
@@ -32,7 +25,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (element) {
                     element.innerHTML = data;
                 }
-                // Execute the callback function after the component is loaded
                 if (callback) {
                     callback();
                 }
@@ -44,7 +36,6 @@ document.addEventListener("DOMContentLoaded", function() {
         return name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     }
 
-    // This function runs *after* the header is loaded into the page
     function setupHeaderUI() {
         const accountName = localStorage.getItem('customerName');
         const isProfessional = localStorage.getItem('isProfessional') === 'true';
@@ -63,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (userProfile) userProfile.style.display = 'flex';
             if (isProfessional) {
                 if (professionalDashboardLink) professionalDashboardLink.style.display = 'inline';
-                if (myBookingsLink) myBookingsLink.style.display = 'none'; // Hide for professionals
+                if (myBookingsLink) myBookingsLink.style.display = 'none';
             } else {
                 if (myBookingsLink) myBookingsLink.style.display = 'inline';
             }
@@ -81,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function() {
             };
         }
 
-        // Close dropdown if clicking outside
         document.addEventListener('click', function() {
             if (userDropdown) userDropdown.style.display = 'none';
         });
@@ -96,7 +86,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Load header, and once it's done, run the UI setup. Then load footer.
     loadComponent('body > header:first-of-type', 'header.html', setupHeaderUI);
     loadComponent('body > footer:first-of-type', 'footer.html');
 });

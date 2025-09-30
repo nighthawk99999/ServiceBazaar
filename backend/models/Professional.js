@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const ProfessionalSchema = new mongoose.Schema({
-  _id: { // This will be the user_id from the User model
+  _id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
